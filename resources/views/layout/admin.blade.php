@@ -596,6 +596,19 @@
                             <div data-i18n="StockLogs">Stock Logs</div>
                         </a>
                     </li>
+                    <li class="menu-item {{ request()->routeIs('work-reports.*') ? 'active' : '' }}">
+                        <a href="{{ route('work-reports.index') }}" class="menu-link">
+                            <i class="menu-icon tf-icons bi bi-clipboard-check"></i>
+                            <div data-i18n="StockLogs">Laporan Pekerjaan</div>
+                        </a>
+                    </li>
+                    {{-- <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('work-reports.*') ? 'active' : '' }}"
+                           href="{{ route('work-reports.index') }}">
+                            <i class="bi bi-clipboard-check"></i>
+                            <span class="ms-1">Laporan Pekerjaan</span>
+                        </a>
+                    </li> --}}
                 </ul>
             </aside>
             <!-- / Menu -->

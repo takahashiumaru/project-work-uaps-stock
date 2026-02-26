@@ -15,6 +15,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProductController; // added
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\StockLogController;
+use App\Http\Controllers\WorkReportController;
 
 // Page
 Route::get('/profile/{id}', [UserController::class, 'profile'])->name('users.profile');
@@ -70,3 +71,11 @@ Route::put('/reset-password/{id}', [UserController::class, 'resetPassword'])->na
 Route::get('/apron', [UserController::class, 'indexApron'])->name('users.apron');
 Route::get('/bge', [UserController::class, 'indexBGE'])->name('users.bge');
 Route::get('/office', [UserController::class, 'indexOffice'])->name('users.office');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/work-reports', [WorkReportController::class, 'index'])->name('work-reports.index');
+    Route::get('/work-reports/create', [WorkReportController::class, 'create'])->name('work-reports.create');
+    Route::post('/work-reports', [WorkReportController::class, 'store'])->name('work-reports.store');
+    Route::post('/work-reports/{workReport}/status', [WorkReportController::class, 'updateStatus'])->name('work-reports.update-status');
+    Route::get('/work-reports/export/csv', [WorkReportController::class, 'exportCsv'])->name('work-reports.export-csv');
+});

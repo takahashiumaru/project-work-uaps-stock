@@ -1,4 +1,4 @@
-<div class="sidebar" id="sidebar">
+{{-- <div class="sidebar" id="sidebar">
     <img src="{{ asset('storage/aps.jpeg') }}" alt="Logo" width="150">
     <hr>
     <a href="{{ route('home') }}"><i class="fas fa-home"></i> Home</a>
@@ -83,4 +83,4 @@
         </div>
     </div>
     <p id="tanggalSekarang"><i class="fas fa-clock"></i> Loading...</p>
-</div>
+</div> --}}
