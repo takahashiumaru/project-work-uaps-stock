@@ -11,13 +11,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use RealRashid\SweetAlert\Facades\Alert;
+use Illuminate\Http\Request;
+use App\Models\Request as StockRequest; // <-- tambah import model Request sebagai alias
 
 class HomeController extends Controller
 {
     /**
      * Menampilkan data dashboard utama.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
         $user = Auth::user();
         // =================================================================
@@ -152,6 +154,26 @@ $productLocationTotals = $productLocationData
         $doughnutChartLabels = $doughnutData->pluck('role');
         $doughnutChartData = $doughnutData->pluck('total');
 
+        // Ambil request pending untuk ditampilkan di dashboard (ambil 10 terbaru mis.)
+        $pendingRaw = StockRequest::with('product')
+            ->where('status', 'Pending')
+            ->orderBy('request_date', 'desc')
+            ->limit(10)
+            ->get();
+
+        // Map ke bentuk yang digunakan di home.blade.php (name, qty, note, status)
+        $pendingRequests = $pendingRaw->map(function ($r) {
+            return (object) [
+                'name' => $r->product->name ?? ('Product #' . $r->product_id),
+                'qty' => $r->qty_requested,
+                'note' => $r->note ?? '-',
+                'status' => $r->status,
+            ];
+        });
+
+        // Total pending count (dipakai di badge)
+        $totalFlightPerDay = $pendingRaw->count();
+
         // =================================================================
         // BAGIAN 4: LOGIKA SWEETALERT ANDA (TETAP DIPERTAHANKAN)
         // =================================================================
@@ -206,7 +228,11 @@ $productLocationTotals = $productLocationData
             // Variabel baru untuk Bar Chart
             'barChartLabels',
             'sickData',
-            'leaveData'
+            'leaveData',
+
+            // Variabel baru untuk Pending Requests
+            'pendingRequests',
+            'totalFlightPerDay'
         ));
     }
 

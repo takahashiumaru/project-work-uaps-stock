@@ -25,4 +25,9 @@ class Product extends Model
         'stock' => 'integer',
         'min_stock' => 'integer',
     ];
+
+    public function stockLogs()
+    {
+        return $this->hasMany(StockLog::class, 'product_id');
+    }
 }

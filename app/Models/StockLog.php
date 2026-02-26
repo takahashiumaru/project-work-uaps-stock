@@ -4,23 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Request extends Model
+class StockLog extends Model
 {
-    protected $table = 'requests';
-    public $timestamps = false;
+    protected $table = 'stock_logs';
+
+    public $timestamps = false; // table only has created_at
 
     protected $fillable = [
         'product_id',
-        'qty_requested',
-        'status',
-        'request_date',
+        'type',
+        'qty',
         'note',
-        'response_note',
+        'user',
+        'created_at',
     ];
 
     protected $casts = [
-        'request_date' => 'datetime',
-        'qty_requested' => 'integer',
+        'qty' => 'integer',
+        'created_at' => 'datetime',
     ];
 
     public function product()
@@ -28,4 +29,3 @@ class Request extends Model
         return $this->belongsTo(Product::class, 'product_id');
     }
 }
-

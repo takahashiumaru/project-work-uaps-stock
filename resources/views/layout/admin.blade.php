@@ -67,7 +67,466 @@
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="{{ asset('template/') }}/assets/js/config.js"></script>
 
+    {{-- FIX: apply theme BEFORE first paint to prevent white flash --}}
+    <script>
+      (function () {
+        const STORAGE_KEY = 'pwus_theme';
+        const saved = localStorage.getItem(STORAGE_KEY) || 'light';
+        const root = document.documentElement;
+
+        // Set attributes/classes ASAP (before CSS/images settle)
+        root.setAttribute('data-theme', saved);
+        root.classList.toggle('dark-style', saved === 'dark');
+        root.classList.toggle('light-style', saved !== 'dark');
+
+        // Help native controls avoid light flash
+        root.style.colorScheme = saved === 'dark' ? 'dark' : 'light';
+      })();
+    </script>
+
     @yield('styles')
+
+    <style>
+        /* === Global Theme Variables (Light default) === */
+        :root{
+            --accent:#5661f8;
+            --bg:#f7fbff;
+            --text:#0f172a;
+            --muted:#6b7280;
+
+            --card-bg:#ffffff;
+            --card-border:#eef2f6;
+
+            --input-bg:#ffffff;
+            --input-border:#dfe4ea;
+            --table-head:#fbfcff;
+
+            --nav-bg:#ffffff;
+            --sidebar-bg:#ffffff;
+            --sidebar-text:#0f172a;
+            --sidebar-muted:#6b7280;
+            --divider:#eef2f6;
+        }
+        html[data-theme="dark"]{
+            --bg:#0b1220;
+            --text:#e5e7eb;
+            --muted:#9ca3af;
+
+            --card-bg:#0f172a;
+            --card-border:#1f2937;
+
+            --input-bg:#0b1220;
+            --input-border:#243244;
+            --table-head:#0b1220;
+
+            --nav-bg:#0f172a;
+            --sidebar-bg:#0b1220;
+            --sidebar-text:#e5e7eb;
+            --sidebar-muted:#9ca3af;
+            --divider:#1f2937;
+        }
+
+        /* FIX: ensure first paint background matches theme */
+        html, body{
+            background: var(--bg) !important;
+            color: var(--text) !important;
+        }
+
+        /* Prevent transition flash on initial load */
+        html *{
+            transition: none !important;
+        }
+        /* Re-enable transitions after first render */
+        html.transitions-ready *{
+            transition: background .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+        }
+
+        body{ background: var(--bg) !important; color: var(--text) !important; }
+
+        /* Cards */
+        .card, .card-clean{
+            background: var(--card-bg) !important;
+            border-color: var(--card-border) !important;
+        }
+        .card-header, .card-header-clean{
+            background: var(--card-bg) !important;
+            border-color: var(--card-border) !important;
+            color: var(--text) !important;
+        }
+
+        /* Navbar (top bar) */
+        html[data-theme="dark"] .layout-navbar,
+        html[data-theme="dark"] .bg-navbar-theme{
+            background: var(--nav-bg) !important;
+            border-color: var(--divider) !important;
+        }
+        html[data-theme="dark"] .layout-navbar .nav-link,
+        html[data-theme="dark"] .layout-navbar .navbar-nav .nav-item a,
+        html[data-theme="dark"] .layout-navbar .dropdown-toggle,
+        html[data-theme="dark"] .layout-navbar .bx{
+            color: var(--text) !important;
+        }
+        html[data-theme="dark"] .dropdown-menu{
+            background: var(--card-bg) !important;
+            color: var(--text) !important;
+            border-color: var(--card-border) !important;
+        }
+        html[data-theme="dark"] .dropdown-item{ color: var(--text) !important; }
+        html[data-theme="dark"] .dropdown-item:hover{ background: rgba(255,255,255,0.06) !important; }
+
+        /* Sidebar */
+        html[data-theme="dark"] #layout-menu,
+        html[data-theme="dark"] .bg-menu-theme{
+            background: var(--sidebar-bg) !important;
+            border-color: var(--divider) !important;
+        }
+        html[data-theme="dark"] .menu-inner .menu-item .menu-link{
+            color: var(--sidebar-text) !important;
+        }
+        html[data-theme="dark"] .menu-inner .menu-item .menu-link .menu-icon{
+            color: var(--sidebar-text) !important;
+        }
+        html[data-theme="dark"] .menu-inner .menu-sub .menu-link{
+            color: var(--sidebar-muted) !important;
+        }
+        html[data-theme="dark"] .menu-item.active > .menu-link,
+        html[data-theme="dark"] .menu-item.open > .menu-link{
+            background: rgba(86,97,248,0.18) !important;
+            color: var(--sidebar-text) !important;
+        }
+        html[data-theme="dark"] .menu-inner-shadow{ background: transparent !important; }
+
+        /* Tables */
+        .table{ color: var(--text) !important; }
+        .table thead th{
+            background: var(--table-head) !important;
+            color: var(--text) !important;
+            border-color: var (--card-border) !important;
+        }
+        .table tbody td{ border-color: var(--card-border) !important; }
+        html[data-theme="dark"] .table-hover tbody tr:hover{
+            background: rgba(255,255,255,0.04) !important;
+        }
+
+        /* Form controls */
+        .form-control, .form-select, textarea{
+            background: var(--input-bg) !important;
+            color: var (--text) !important;
+            border-color: var(--input-border) !important;
+        }
+        .form-control::placeholder{ color: var(--muted) !important; }
+        .form-label{ color: var (--text) !important; }
+        .text-muted{ color: var(--muted) !important; }
+
+        /* Breadcrumb visibility in dark */
+        html[data-theme="dark"] .breadcrumb-item,
+        html[data-theme="dark"] .breadcrumb-item a{
+            color: var(--muted) !important;
+        }
+        html[data-theme="dark"] .breadcrumb-item.active{ color: var(--text) !important; }
+
+        /* Badges/labels that become unreadable */
+        html[data-theme="dark"] .badge.bg-label-primary{
+            background: rgba(86,97,248,0.18) !important;
+            color: #c7d2fe !important;
+            border: 1px solid rgba(86,97,248,0.25) !important;
+        }
+
+        /* Modals */
+        .modal-content{
+            background: var(--card-bg) !important;
+            color: var(--text) !important;
+            border-color: var(--card-border) !important;
+        }
+
+        /* Footer */
+        html[data-theme="dark"] .content-footer,
+        html[data-theme="dark"] .footer,
+        html[data-theme="dark"] .bg-footer-theme{
+            background: var(--card-bg) !important;
+            color: var(--text) !important;
+            border-top: 1px solid var(--divider) !important;
+        }
+        html[data-theme="dark"] .footer-link{ color: var(--muted) !important; }
+
+        /* Pagination */
+        html[data-theme="dark"] .pagination .page-link{
+            background: var(--card-bg) !important;
+            color: var(--text) !important;
+            border-color: var(--card-border) !important;
+        }
+        html[data-theme="dark"] .pagination .page-item.active .page-link{
+            background: rgba(86,97,248,0.22) !important;
+            border-color: rgba(86,97,248,0.35) !important;
+            color: #c7d2fe !important;
+        }
+        html[data-theme="dark"] .pagination .page-item.disabled .page-link{
+            background: rgba(255,255,255,0.02) !important;
+            color: var(--muted) !important;
+            border-color: var(--card-border) !important;
+        }
+
+        /* Select2 (bootstrap-5 theme) */
+        html[data-theme="dark"] .select2-container--bootstrap-5 .select2-selection{
+            background-color: var(--input-bg) !important;
+            border-color: var(--input-border) !important;
+            color: var(--text) !important;
+        }
+        html[data-theme="dark"] .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered{
+            color: var(--text) !important;
+        }
+        html[data-theme="dark"] .select2-container--bootstrap-5 .select2-selection--single .select2-selection__placeholder{
+            color: var(--muted) !important;
+        }
+        html[data-theme="dark"] .select2-container--bootstrap-5 .select2-dropdown{
+            background-color: var(--card-bg) !important;
+            border-color: var(--card-border) !important;
+            color: var(--text) !important;
+        }
+        html[data-theme="dark"] .select2-container--bootstrap-5 .select2-results__option{
+            color: var(--text) !important;
+        }
+        html[data-theme="dark"] .select2-container--bootstrap-5 .select2-results__option--highlighted{
+            background: rgba(86,97,248,0.22) !important;
+            color: #e5e7eb !important;
+        }
+        html[data-theme="dark"] .select2-container--bootstrap-5 .select2-search__field{
+            background: var(--input-bg) !important;
+            color: var(--text) !important;
+            border-color: var(--input-border) !important;
+        }
+
+        /* FIX: table wrapper cards that were forced white in per-page CSS */
+        html[data-theme="dark"] .table-responsive{
+            background: var(--card-bg) !important;
+            border-color: var(--card-border) !important;
+        }
+
+        /* FIX: home stat cards text (some pages hardcode dark text) */
+        html[data-theme="dark"] .stat-value{
+            color: var(--text) !important;
+        }
+        html[data-theme="dark"] .stat-label,
+        html[data-theme="dark"] .subtitle,
+        html[data-theme="dark"] .muted-sm{
+            color: var(--muted) !important;
+        }
+
+        /* Make sure generic headings inside cards stay readable */
+        html[data-theme="dark"] h1,
+        html[data-theme="dark"] h2,
+        html[data-theme="dark"] h3,
+        html[data-theme="dark"] h4,
+        html[data-theme="dark"] h5,
+        html[data-theme="dark"] h6{
+            color: var(--text) !important;
+        }
+
+        /* === Elegant Sidebar (SAFE: scoped, no layout/position overrides) === */
+        #layout-menu{
+            border-right: 1px solid var(--divider);
+        }
+
+        /* Brand area */
+        #layout-menu .app-brand{
+            padding: 14px 16px !important;
+            border-bottom: 1px solid var(--divider) !important;
+        }
+        #layout-menu .app-brand-logo img{
+            width: 56px !important;
+            height: auto !important;
+            display: block;
+        }
+
+        /* Inner spacing */
+        #layout-menu .menu-inner{
+            padding: 10px 10px 14px !important;
+        }
+
+        /* Links as pills */
+        #layout-menu .menu-link{
+            border-radius: 12px !important;
+            margin: 4px 6px !important;
+            padding: 10px 12px !important;
+            transition: background .18s ease, box-shadow .18s ease, transform .18s ease, color .18s ease;
+        }
+        #layout-menu .menu-link:hover{
+            background: rgba(86,97,248,0.10) !important;
+            transform: translateY(-1px);
+        }
+        html[data-theme="dark"] #layout-menu .menu-link:hover{
+            background: rgba(255,255,255,0.05) !important;
+        }
+
+        /* Active/open */
+        #layout-menu .menu-item.active > .menu-link,
+        #layout-menu .menu-item.open > .menu-link{
+            background: rgba(86,97,248,0.18) !important;
+            box-shadow: 0 10px 18px rgba(86,97,248,0.12);
+            font-weight: 800;
+            position: relative;
+        }
+        #layout-menu .menu-item.active > .menu-link::before,
+        #layout-menu .menu-item.open > .menu-link::before{
+            content:"";
+            position:absolute;
+            left:-2px;
+            top:10px;
+            bottom:10px;
+            width:3px;
+            border-radius:999px;
+            background: var(--accent);
+        }
+
+        /* Submenu container */
+        #layout-menu .menu-sub{
+            margin: 6px 8px 10px !important;
+            padding: 8px 6px !important;
+            border-radius: 12px;
+            border: 1px solid var(--divider);
+            background: rgba(15,23,42,0.02);
+        }
+        html[data-theme="dark"] #layout-menu .menu-sub{
+            background: rgba(255,255,255,0.03);
+        }
+
+        /* Submenu link tighter */
+        #layout-menu .menu-sub .menu-link{
+            margin: 2px 4px !important;
+            padding: 8px 10px !important;
+            border-radius: 10px !important;
+        }
+
+        /* Icons look consistent */
+        #layout-menu .menu-icon{
+            font-size: 1.15rem !important;
+        }
+
+        /* Remove inner shadow overlay that looks “old” */
+        #layout-menu .menu-inner-shadow{
+            display: none !important;
+        }
+
+        /* === FIX: prevent sidebar being "covered" / overlapped === */
+        #layout-menu{
+            position: relative;           /* no behavior change, just stacking context */
+            z-index: 1100;                /* above content/backdrop */
+        }
+        .layout-overlay{
+            z-index: 1090;
+        }
+
+        /* === Reduce large gap between sidebar and content (desktop) === */
+        @media (min-width: 1200px){
+            /* Trim left padding inside main page area */
+            .layout-page{
+                padding-left: 12px !important;
+            }
+
+            /* Also reduce default container padding a bit (optional but helps) */
+            .container-xxl{
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+
+            /* Detached navbar tends to keep wide margin; tighten it */
+            #layout-navbar.container-xxl{
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+        }
+
+        /* === HIDE "tile"/indicator on menu items (sidebar only) === */
+        #layout-menu .menu-item > .menu-link::before,
+        #layout-menu .menu-item > .menu-link::after{
+            content: none !important;
+            display: none !important;
+        }
+
+        /* If active/open looks like a tile, flatten it */
+        #layout-menu .menu-item.active > .menu-link,
+        #layout-menu .menu-item.open > .menu-link{
+            box-shadow: none !important;     /* remove tile shadow */
+            background: transparent !important; /* remove tile bg */
+            font-weight: 800;               /* keep emphasis */
+        }
+
+        /* Keep a subtle text/icon emphasis instead */
+        #layout-menu .menu-item.active > .menu-link,
+        #layout-menu .menu-item.open > .menu-link{
+            color: var(--accent) !important;
+        }
+        #layout-menu .menu-item.active > .menu-link .menu-icon,
+        #layout-menu .menu-item.open > .menu-link .menu-icon{
+            color: var(--accent) !important;
+        }
+
+        /* Optional: keep hover background only */
+        #layout-menu .menu-link:hover{
+            background: rgba(86,97,248,0.08) !important;
+            transform: none !important;
+        }
+
+        /* FIX: circles must not become oval */
+        .circle{
+            width: 40px;
+            height: 40px;
+            border-radius: 50% !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex: 0 0 40px;
+        }
+
+        /* Navbar avatar: ensure perfect circle even if source image is rectangular */
+        .avatar img,
+        .avatar .w-px-40{
+            width: 40px !important;
+            height: 40px !important;
+            object-fit: cover;
+            border-radius: 50% !important;
+            display: block;
+        }
+
+        /* Theme toggle icon-only button */
+        #themeToggleBtn{
+            width: 38px;
+            height: 38px;
+            padding: 0 !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            margin-left: 10px; /* NEW */
+        }
+        #themeToggleBtn i{
+            font-size: 1.05rem;
+            line-height: 1;
+        }
+
+        /* Theme toggle icon colors (elegant + clear) */
+        #themeToggleBtn{
+            border-color: var(--divider);
+        }
+        #themeToggleBtn:hover{
+            background: rgba(86,97,248,0.08);
+            border-color: rgba(86,97,248,0.25);
+        }
+        html[data-theme="dark"] #themeToggleBtn:hover{
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.14);
+        }
+
+        /* Default (light theme): moon shows accent */
+        #themeToggleBtn i.bi-moon-stars{
+            color: var(--accent) !important;
+        }
+        /* Dark theme: sun shows warm amber */
+        #themeToggleBtn i.bi-sun{
+            color: #fbbf24 !important; /* amber */
+        }
+    </style>
 </head>
 
 <body>
@@ -95,24 +554,24 @@
                 <ul class="menu-inner py-1">
                     <!-- Dashboard -->
                     <!-- active -->
-                    <li class="menu-item">
+                    <li class="menu-item {{ request()->routeIs('home') ? 'active' : '' }}">
                         <a href="{{ route('home') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-home-circle"></i>
                             <div data-i18n="Analytics">Home</div>
                         </a>
                     </li>
-                    <li class="menu-item">
+                    <li class="menu-item {{ request()->routeIs('products.*') || request()->routeIs('requests.*') ? 'open active' : '' }}">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bx bx-package"></i>
                             <div data-i18n="Apply Leave">Produk</div>
                         </a>
                         <ul class="menu-sub">
-                            <li class="menu-item">
+                            <li class="menu-item {{ request()->routeIs('products.*') ? 'active' : '' }}">
                                 <a href="{{ route('products.index') }}" class="menu-link">
                                     <div data-i18n="Product">Produk</div>
                                 </a>
                             </li>
-                            <li class="menu-item">
+                            <li class="menu-item {{ request()->routeIs('requests.*') ? 'active' : '' }}">
                                 <a href="{{ route('requests.index') }}" class="menu-link">
                                     <div data-i18n="Request">Request Ho</div>
                                 </a>
@@ -130,6 +589,12 @@
                             </li> --}}
                             {{-- @endif --}}
                         </ul>
+                    </li>
+                    <li class="menu-item {{ request()->routeIs('stock-logs.*') ? 'active' : '' }}">
+                        <a href="{{ route('stock-logs.index') }}" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-history"></i>
+                            <div data-i18n="StockLogs">Stock Logs</div>
+                        </a>
                     </li>
                 </ul>
             </aside>
@@ -209,6 +674,11 @@
                                 </ul>
                             </li>
                             <!--/ User -->
+                            <li class="nav-item">
+                                <button type="button" id="themeToggleBtn" class="btn btn-outline-secondary btn-sm" aria-label="Toggle theme">
+                                    <i class="bi bi-moon-stars"></i>
+                                </button>
+                            </li>
                         </ul>
                     </div>
                 </nav>
@@ -307,6 +777,47 @@
 
         // Update every second
         setInterval(updateDateTime, 1000);
+    </script>
+
+    <script>
+    (function() {
+        const STORAGE_KEY = 'pwus_theme';
+        const root = document.documentElement;
+        const btn = document.getElementById('themeToggleBtn');
+
+        function setBtnIcon(theme){
+            if (!btn) return;
+            btn.innerHTML = theme === 'dark'
+              ? '<i class="bi bi-sun" aria-hidden="true"></i>'
+              : '<i class="bi bi-moon-stars" aria-hidden="true"></i>';
+        }
+
+        function applyTheme(theme) {
+            root.setAttribute('data-theme', theme);
+            root.classList.toggle('dark-style', theme === 'dark');
+            root.classList.toggle('light-style', theme !== 'dark');
+            root.style.colorScheme = theme === 'dark' ? 'dark' : 'light';
+            setBtnIcon(theme);
+        }
+
+        const saved = localStorage.getItem(STORAGE_KEY) || 'light';
+        applyTheme(saved);
+
+        if (btn) {
+            btn.addEventListener('click', () => {
+                const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                localStorage.setItem(STORAGE_KEY, next);
+                applyTheme(next);
+            });
+        }
+    })();
+    </script>
+
+    <script>
+      // Re-enable transitions after page is shown (avoid blink/flash)
+      window.addEventListener('DOMContentLoaded', () => {
+        document.documentElement.classList.add('transitions-ready');
+      });
     </script>
 
     @yield('scripts')

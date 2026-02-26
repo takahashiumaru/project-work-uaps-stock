@@ -29,6 +29,40 @@
     </div>
 </div>
 
+<style>
+/* Dark mode: profile dropdown card should not be white */
+html[data-theme="dark"] #profileCard{
+    background-color: var(--card-bg) !important;
+    color: var(--text) !important;
+    border-color: var(--card-border) !important;
+}
+html[data-theme="dark"] #profileCard .card-title,
+html[data-theme="dark"] #profileCard .card-text{
+    color: var(--text) !important;
+}
+html[data-theme="dark"] #profileCard .card-text{
+    opacity: .85;
+}
+
+/* FIX: profile icon should be a true circle container */
+#profileCard .profile-header{
+    width: 64px;
+    height: 64px;
+    margin: 0 auto;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* keep icon centered */
+#profileCard .profile-header i{
+    font-size: 56px !important; /* override inline 50px for better fit */
+    line-height: 1 !important;
+}
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const profileToggle = document.getElementById('profileToggle');

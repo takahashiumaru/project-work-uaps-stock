@@ -13,11 +13,36 @@ use App\Http\Controllers\AdminTrainingCertificateController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProductController; // added
+use App\Http\Controllers\RequestController;
+use App\Http\Controllers\StockLogController;
 
 // Page
 Route::get('/profile/{id}', [UserController::class, 'profile'])->name('users.profile');
 Route::resource('products', ProductController::class)->middleware('auth'); // added
-Route::resource('requests', ProductController::class)->middleware('auth'); // added
+Route::resource('requests', RequestController::class)->except(['destroy']);
+
+// Add AJAX approve endpoint (use {id} to avoid route-model-binding ambiguity)
+Route::post('requests/{id}/approve', [RequestController::class, 'approve'])->name('requests.approve');
+
+// Add AJAX reject endpoint
+Route::post('requests/{id}/reject', [RequestController::class, 'reject'])->name('requests.reject');
+
+// Add destroy route for requests
+Route::delete('requests/{id}', [RequestController::class, 'destroy'])->name('requests.destroy');
+
+Route::resource('stock-logs', StockLogController::class)
+    ->only(['index','create','store','show','destroy'])
+    ->middleware('auth');
+
+Route::get('stock-logs/export/excel', [StockLogController::class, 'exportExcel'])
+    ->name('stock-logs.export.excel');
+
+Route::get('stock-logs/export/pdf', [StockLogController::class, 'exportPdf'])
+    ->name('stock-logs.export.pdf');
+
+// halaman baru untuk tampilan print/save as PDF
+Route::get('stock-logs/export/pdf/page', [StockLogController::class, 'exportPdfPage'])
+    ->name('stock-logs.export.pdf.page');
 
 // API
 Route::get('/', [LoginController::class, 'login'])->name('login');

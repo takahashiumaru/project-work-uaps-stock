@@ -1,161 +1,199 @@
 @extends('layout.admin')
 
+@section('styles')
+<style>
+:root{--accent:#5661f8;--muted:#6b7280;--card-bg:#fff;--card-border:#eef2f6;--shadow:0 6px 18px rgba(16,24,40,.06);}
+.header-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;}
+.header-row h4{margin:0;font-weight:800;color:var(--accent);}
+.header-row .subtitle{color:var(--muted);font-size:.95rem;}
+.card-clean{border-radius:12px;border:1px solid var(--card-border);background:var(--card-bg);box-shadow:var(--shadow);}
+.card-header-clean{padding:14px 16px;border-bottom:1px solid var(--card-border);background:#fff;border-top-left-radius:12px;border-top-right-radius:12px;font-weight:800;}
+.btn-create{background:linear-gradient(90deg,var(--accent),#3b5afe);border:none;color:#fff;padding:8px 14px;border-radius:10px;box-shadow:0 6px 18px rgba(86,97,248,.12);font-weight:700;}
+.btn-create:hover{transform:translateY(-2px);}
+</style>
+@endsection
+
+@section('title', 'Update Request')
+
 @section('content')
-<h4 class="fw-bold py-3 mb-4">
-    <span class="text-muted fw-light">Inventory /</span> Edit Product
-</h4>
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="header-row">
+        <div>
+            <h4>Approval Request (HO)</h4>
+            <div class="subtitle">Approve atau Reject request pengadaan</div>
+        </div>
+        <div>
+            <a href="{{ route('requests.index') }}" class="btn btn-outline-secondary">Kembali</a>
+        </div>
+    </div>
 
-<div class="card mb-4">
-    <h5 class="card-header">Formulir Edit Product</h5>
-    <div class="card-body">
+    <div class="card-clean mb-4">
+        <div class="card-header-clean">Ubah Status Request</div>
+        <div class="card-body">
 
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $e)
-                        <li>{{ $e }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+            @if ($errors->any())
+                <div class="alert alert-danger"><ul class="mb-0">@foreach ($errors->all() as $e) <li>{{ $e }}</li> @endforeach</ul></div>
+            @endif
 
-        <form action="{{ route('products.update', $product->id) }}" method="POST">
-            @csrf
-            @method('PUT')
+            <form id="requestStatusForm" action="{{ route('requests.update', $request->id) }}" method="POST">
+                @csrf
+                @method('PUT')
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="sku" class="form-label">Kode SKU</label>
-                    <input type="text"
-                        class="form-control @error('sku') is-invalid @enderror"
-                        id="sku"
-                        name="sku"
-                        value="{{ old('sku', $product->sku) }}"
-                        placeholder="Cth: ATK-001"
-                        required>
-                    @error('sku')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                <div class="mb-3">
+                    <label class="form-label">Produk</label>
+                    <input type="text" class="form-control" value="{{ $request->product->sku ?? '' }} - {{ $request->product->name ?? '' }}" readonly>
                 </div>
 
-                <div class="col-md-6 mb-3">
-                    <label for="name" class="form-label">Nama Barang</label>
-                    <input type="text"
-                        class="form-control @error('name') is-invalid @enderror"
-                        id="name"
-                        name="name"
-                        value="{{ old('name', $product->name) }}"
-                        placeholder="Cth: Kertas A4"
-                        required>
-                    @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label for="location" class="form-label">Lokasi Penyimpanan</label>
-                <input type="text"
-                    class="form-control @error('location') is-invalid @enderror"
-                    id="location"
-                    name="location"
-                    value="{{ old('location', $product->location) }}"
-                    placeholder="Cth: Rak A-02"
-                    required>
-                @error('location')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="mb-3">
-                <label for="unit" class="form-label">Satuan (Unit)</label>
-                <select class="form-select select1 @error('unit') is-invalid @enderror"
-                    id="unit"
-                    name="unit"
-                    required>
-                    <option value="">-- Pilih Satuan --</option>
-                    @foreach (['Pcs','Unit','Box','Rim','Pack','Botol'] as $u)
-                        <option value="{{ $u }}"
-                            {{ old('unit', $product->unit) == $u ? 'selected' : '' }}>
-                            {{ $u }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('unit')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="mb-3">
-                <label for="category" class="form-label">Kategori</label>
-                <select class="form-select select2 @error('category') is-invalid @enderror"
-                    id="category"
-                    name="category"
-                    required>
-                    <option value="">-- Pilih Kategori --</option>
-
-                    <option value="Office Supply"
-                        {{ old('category', $product->category) == 'Office Supply' ? 'selected' : '' }}>
-                        Office Supply (ATK)
-                    </option>
-
-                    <option value="Electronics"
-                        {{ old('category', $product->category) == 'Electronics' ? 'selected' : '' }}>
-                        Elektronik & IT
-                    </option>
-
-                    <option value="Pantry"
-                        {{ old('category', $product->category) == 'Pantry' ? 'selected' : '' }}>
-                        Pantry & Dapur
-                    </option>
-
-                    <option value="Furniture"
-                        {{ old('category', $product->category) == 'Furniture' ? 'selected' : '' }}>
-                        Furniture
-                    </option>
-
-                    <option value="Others"
-                        {{ old('category', $product->category) == 'Others' ? 'selected' : '' }}>
-                        Lainnya
-                    </option>
-                </select>
-                @error('category')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="stock" class="form-label">Stok</label>
-                    <input type="number"
-                        class="form-control @error('stock') is-invalid @enderror"
-                        id="stock"
-                        name="stock"
-                        value="{{ old('stock', $product->stock) }}"
-                        required>
-                    @error('stock')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                <div class="mb-3">
+                    <label class="form-label">Jumlah Diminta</label>
+                    <input type="text" class="form-control" value="{{ $request->qty_requested }} {{ $request->product->unit ?? '' }}" readonly>
                 </div>
 
-                <div class="col-md-6 mb-3">
-                    <label for="min_stock" class="form-label">Min Stock (Alert)</label>
-                    <input type="number"
-                        class="form-control @error('min_stock') is-invalid @enderror"
-                        id="min_stock"
-                        name="min_stock"
-                        value="{{ old('min_stock', $product->min_stock) }}"
-                        required>
-                    @error('min_stock')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                <!-- show current status readonly (informasi) -->
+                <div class="mb-3">
+                    <label class="form-label">Status Saat Ini</label>
+                    <input type="text" class="form-control" value="{{ $request->status }}" readonly>
                 </div>
-            </div>
 
-            <button type="submit" class="btn btn-primary">Update Product</button>
-            <a href="{{ route('products.index') }}" class="btn btn-secondary">Batal</a>
+                <!-- hidden status field — kept for form fallback -->
+                <input type="hidden" name="status" id="status" value="{{ $request->status }}">
 
-        </form>
+                <div class="mb-3">
+                    <label class="form-label">Catatan Respon (HO)</label>
+                    <textarea name="response_note" id="response_note" class="form-control" rows="3">{{ old('response_note', $request->response_note) }}</textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="button" id="btnApprove" class="btn btn-success">Approve</button>
+                    <button type="button" id="btnReject" class="btn btn-danger">Reject</button>
+                    <a href="{{ route('requests.index') }}" class="btn btn-secondary">Batal</a>
+                </div>
+            </form>
+
+        </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const noteEl = document.getElementById('response_note');
+    const btnApprove = document.getElementById('btnApprove');
+    const btnReject = document.getElementById('btnReject');
+
+    // FIX: btnSave tidak ada di markup -> jangan dipakai
+    function disableButtons(disabled) {
+        btnApprove.disabled = disabled;
+        btnReject.disabled = disabled;
+    }
+
+    const csrfToken = '{{ csrf_token() }}';
+    const baseUrl = "{{ url('requests') }}";
+    const requestId = @json($request->id);
+    const approveUrl = baseUrl + '/' + requestId + '/approve';
+    const rejectUrl = baseUrl + '/' + requestId + '/reject';
+    const indexUrl = "{{ route('requests.index') }}";
+
+    // Approve: tampilkan konfirmasi dulu
+    btnApprove.addEventListener('click', function () {
+        Swal.fire({
+            title: 'Yakin ingin menyetujui?',
+            text: 'Setujui permintaan ini dan tambahkan stok sesuai jumlah request.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, setujui',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            const note = noteEl.value.trim();
+
+            disableButtons(true);
+            fetch(approveUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ response_note: note })
+            })
+            .then(res => res.json().then(data => ({ status: res.status, body: data })))
+            .then(({ status, body }) => {
+                disableButtons(false);
+                if (status >= 200 && status < 300) {
+                    Swal.fire({ icon: 'success', title: 'Berhasil', text: body.message || 'Request approved.' })
+                        .then(() => { window.location.href = indexUrl; });
+                } else if (status === 422) {
+                    Swal.fire({ icon: 'warning', title: 'Validation', text: Object.values(body.errors).flat().join(' ') });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: body.error || 'Terjadi kesalahan' });
+                }
+            })
+            .catch(err => {
+                disableButtons(false);
+                console.error(err);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Gagal menghubungi server.' });
+            });
+        });
+    });
+
+    // Reject: cek note, lalu tampilkan konfirmasi sebelum kirim
+    btnReject.addEventListener('click', function () {
+        const note = noteEl.value.trim();
+        if (!note) {
+            Swal.fire({ icon: 'warning', title: 'Alasan wajib', text: 'Mohon isi catatan alasan penolakan terlebih dahulu.' });
+            noteEl.focus();
+            return;
+        }
+
+        Swal.fire({
+            title: 'Yakin ingin menolak?',
+            text: 'Menolak akan mencatat alasan dan mengubah status menjadi Rejected.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, tolak',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            disableButtons(true);
+            fetch(rejectUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ response_note: note })
+            })
+            .then(res => res.json().then(data => ({ status: res.status, body: data })))
+            .then(({ status, body }) => {
+                disableButtons(false);
+                if (status >= 200 && status < 300) {
+                    Swal.fire({ icon: 'success', title: 'Berhasil', text: body.message || 'Request rejected.' })
+                        .then(() => { window.location.href = indexUrl; });
+                } else if (status === 422) {
+                    Swal.fire({ icon: 'warning', title: 'Validation', text: Object.values(body.errors).flat().join(' ') });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: body.error || 'Terjadi kesalahan' });
+                }
+            })
+            .catch(err => {
+                disableButtons(false);
+                console.error(err);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Gagal menghubungi server.' });
+            });
+        });
+    });
+
+    // fallback: disable buttons on manual submit
+    const form = document.getElementById('requestStatusForm');
+    form.addEventListener('submit', function () { disableButtons(true); });
+});
+</script>
 @endsection

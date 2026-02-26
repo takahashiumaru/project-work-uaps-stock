@@ -1,12 +1,32 @@
 @extends('layout.admin')
 
-@section('content')
-    <h4 class="fw-bold py-3 mb-4">
-        <span class="text-muted fw-light">Produk /</span> Tambah Produk Baru
-    </h4>
+@section('styles')
+<style>
+:root{--accent:#5661f8;--muted:#6b7280;--card-bg:#fff;--card-border:#eef2f6;--shadow:0 6px 18px rgba(16,24,40,.06);}
+.header-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;}
+.header-row h4{margin:0;font-weight:800;color:var(--accent);}
+.header-row .subtitle{color:var(--muted);font-size:.95rem;}
+.card-clean{border-radius:10px;border:1px solid var(--card-border);background:var(--card-bg);box-shadow:var(--shadow);}
+.card-header-clean{padding:14px 16px;border-bottom:1px solid var(--card-border);font-weight:800;color:#0f172a;background:#fff;border-top-left-radius:10px;border-top-right-radius:10px;}
+.btn-create{background:linear-gradient(90deg,var(--accent),#3b5afe);border:none;color:#fff;padding:8px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(86,97,248,.12);font-weight:600;}
+.btn-create:hover{transform:translateY(-2px);}
+</style>
+@endsection
 
-    <div class="card mb-4">
-        <h5 class="card-header">Formulir Tambah Produk</h5>
+@section('content')
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="header-row">
+        <div>
+            <h4>Tambah Produk</h4>
+            <div class="subtitle">Input data produk inventory</div>
+        </div>
+        <div>
+            <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">Kembali</a>
+        </div>
+    </div>
+
+    <div class="card-clean mb-4">
+        <div class="card-header-clean">Formulir Tambah Produk</div>
         <div class="card-body">
             <form method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data">
                 @csrf
@@ -87,11 +107,12 @@
                         @enderror
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Simpan Produk</button>
+                <button type="submit" class="btn-create">Simpan Produk</button>
                 <a href="{{ route('products.index') }}" class="btn btn-secondary">Batal</a>
             </form>
         </div>
     </div>
+</div>
 @endsection
 
 @section('scripts')

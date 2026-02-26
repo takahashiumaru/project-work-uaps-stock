@@ -3,6 +3,163 @@
 @section('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root {
+            --accent: #5661f8;
+            --muted: #6b7280;
+            --success: #10b981;
+            --warn: #f59e0b;
+            --danger: #ef4444;
+            --card-bg: #ffffff;
+            --card-border: #eef2f6;
+            --radius: 12px;
+            --shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
+        }
+
+        body {
+            background: #f7fbff;
+            color: #0f172a;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap; /* allow wrapping */
+        }
+
+        .header-row h4 {
+            margin: 0;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .header-row .subtitle {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .btn-create {
+            background: linear-gradient(90deg, var(--accent), #3b5afe);
+            border: none;
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 8px;
+            box-shadow: 0 6px 18px rgba(86, 97, 248, 0.12);
+            font-weight: 600;
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        .btn-create:hover {
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 575.98px) {
+            .btn-create {
+                width: 100%;
+                white-space: normal;
+            }
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        @media(max-width: 991px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .stat-left {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 0.88rem;
+        }
+
+        .stat-value {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #0b1220;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        .stat-icon.sku {
+            background: linear-gradient(135deg, var(--accent), #3b5afe);
+        }
+
+        .stat-icon.unit {
+            background: linear-gradient(135deg, #10b981, #06b06c);
+        }
+
+        .stat-icon.pending {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+        }
+
+        .stat-icon.low {
+            background: linear-gradient(135deg, #ef4444, #f97373);
+        }
+
+        .card-clean {
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
+            box-shadow: none;
+        }
+
+        .table thead th {
+            background: #fbfcff;
+            color: #111827;
+            font-weight: 700;
+        }
+
+        .badge-status {
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .badge-pending {
+            background: var(--warn);
+        }
+
+        .badge-critical {
+            background: var(--danger);
+        }
+
         .panel {
             background: #fff;
             border-radius: 8px;
@@ -230,272 +387,231 @@
             transition: width 1.2s ease-in-out;
             border-radius: 10px;
         }
+
+        .card-header-clean {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--card-border);
+            font-weight: 800;
+            color: #0f172a;
+            background: #fff;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .pending-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .pending-list li:last-child {
+            border-bottom: none;
+        }
+
+        .muted-sm {
+            font-size: .85rem;
+            color: var(--muted);
+        }
+
+        /* FIX: header right button clipped on mobile */
+        .header-row{
+            flex-wrap: wrap; /* allow wrapping */
+        }
+        .header-actions{
+            flex: 0 0 auto;
+            max-width: 100%;
+        }
+
+        @media (max-width: 575.98px){
+            .header-row{
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .header-actions,
+            .header-actions .btn-create{
+                width: 100%;
+            }
+            .header-actions .btn-create{
+                white-space: normal; /* allow label wrap instead of clipping */
+                text-align: center;
+            }
+        }
     </style>
 @endsection
 
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
-        <div class="row">
-            <div class="col-lg-12 mb-4">
-                @php
-                    $hour = date('H');
-                    if ($hour < 12) {
-                        $timeGreeting = 'Pagi';
-                    } elseif ($hour < 18) {
-                        $timeGreeting = 'Siang';
-                    } else {
-                        $timeGreeting = 'Malam';
-                    }
-                @endphp
+        <div class="header-row">
+            <div>
+                <h4>Dashboard</h4>
+                <div class="subtitle">Ringkasan Inventory & Requests</div>
+            </div>
 
-                <h2 class="fw-bold mb-4">
-                    Hi {{ Auth::user()->fullname }}, Selamat {{ $timeGreeting }}
-                </h2>
-                <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="fw-bold py-3 mb-4">
-                        <span class="text-muted fw-light">Dashboard /</span> Overview
-                    </h4>
-                </div>
+            <div class="header-actions">
+                <a href="{{ route('requests.create') }}" class="btn-create">+ Buat Request</a>
             </div>
         </div>
 
-        {{-- Panel Atas --}}
-        <div class="row mb-4">
-            <div class="col-md-3 col-sm-12">
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        <i class="fas fa-box me-2"></i> Jenis Barang (SKU)
-                    </div>
-                    <div class="panel-body">
-                        <p>
-                            <strong class="counter text-primary" data-target="{{ $totalSku ?? 0 }}">0</strong>
-                        </p>
-                    </div>
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-left">
+                    <div class="stat-label">Jenis Barang (SKU)</div>
+                    <div class="stat-value counter" data-target="{{ $totalSku ?? 0 }}">0</div>
                 </div>
+                <div class="stat-icon sku"><i class="bx bx-box" style="font-size:20px"></i></div>
             </div>
 
-            <div class="col-md-3 col-sm-12">
-                <div class="panel panel-success">
-                    <div class="panel-heading">
-                        <i class="fas fa-layer-group me-2"></i> Total Fisik Unit
-                    </div>
-                    <div class="panel-body">
-                        <p>
-                            <strong class="counter text-success" data-target="{{ $totalStock ?? 0 }}">0</strong>
-                        </p>
-                    </div>
+            <div class="stat-card">
+                <div class="stat-left">
+                    <div class="stat-label">Total Fisik Unit</div>
+                    <div class="stat-value counter" data-target="{{ $totalStock ?? 0 }}">0</div>
                 </div>
+                <div class="stat-icon unit"><i class="bx bx-layer" style="font-size:20px"></i></div>
             </div>
 
-            <div class="col-md-3 col-sm-12">
-                <div class="panel panel-warning">
-                    <div class="panel-heading">
-                        <i class="fas fa-exclamation-circle me-2"></i> Request Pending Ho
-                    </div>
-                    <div class="panel-body">
-                        <p>
-                            <strong class="counter text-warning" data-target="{{ $totalFlightPerDay ?? 0 }}">0</strong>
-                        </p>
-                    </div>
+            <div class="stat-card">
+                <div class="stat-left">
+                    <div class="stat-label">Request Pending HO</div>
+                    <div class="stat-value counter" data-target="{{ $totalFlightPerDay ?? 0 }}">0</div>
                 </div>
+                <div class="stat-icon pending"><i class="bx bx-time" style="font-size:20px"></i></div>
             </div>
 
-            <div class="col-md-3 col-sm-12">
-                <div class="panel panel-danger">
-                    <div class="panel-heading">
-                        <i class="fas fa-chart-line me-2"></i> Stok Menipis
-                    </div>
-                    <div class="panel-body">
-                        <p>
-                            <strong class="counter text-danger" data-target="{{ $lowStock ?? 0 }}">0</strong>
-                        </p>
-                    </div>
+            <div class="stat-card">
+                <div class="stat-left">
+                    <div class="stat-label">Stok Menipis</div>
+                    <div class="stat-value counter" data-target="{{ $lowStock ?? 0 }}">0</div>
                 </div>
+                <div class="stat-icon low"><i class="bx bx-trending-down" style="font-size:20px"></i></div>
             </div>
         </div>
 
-        {{-- Layout Chart (Atas) --}}
-        <div class="row mt-4">
-
-            {{-- KIRI --}}
-            <div class="col-lg-6 col-md-12">
-                {{-- Komposisi Gudang --}}
-                <div class="card chart-card-custom mb-4">
-                    <div class="card-header chart-card-header-custom">
-                        Komposisi Gudang
+        <div class="row g-4 mt-1">
+            <div class="col-lg-8">
+                <div class="card-clean mb-4">
+                    <div class="card-header-clean d-flex justify-content-between align-items-center">
+                        <span>Komposisi Gudang</span>
+                        <span class="muted-sm">Distribusi lokasi produk</span>
                     </div>
-                    <div class="card-body">
-                        <div class="chart-canvas-wrapper">
+                    <div class="p-3">
+                        <div class="chart-canvas-wrapper" style="height:320px;">
                             <canvas id="doughnutChart"></canvas>
                         </div>
                     </div>
                 </div>
-                {{-- Tren Laporan --}}
-                <div class="card chart-card-custom ">
-                    <div class="card-header chart-card-header-custom">
-                        Tren Laporan Pekerjaan (7 Hari)
+
+                <div class="card-clean">
+                    <div class="card-header-clean d-flex justify-content-between align-items-center">
+                        <span>Tren (7 Hari)</span>
+                        <span class="muted-sm">Aktivitas harian</span>
                     </div>
-                    <div class="card-body">
-                        <div class="chart-canvas-wrapper">
+                    <div class="p-3">
+                        <div class="chart-canvas-wrapper" style="height:320px;">
                             <canvas id="lineChart"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- KANAN --}}
-            <div class="col-lg-6 col-md-12 mt-4 mt-lg-0">
-
-                <div class="card pending-card shadow-sm border-0 h-100">
-                    <div class="card-header pending-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 fw-bold" style="color: #f59e0b">
-                            <i class="fas fa-clock me-2" style="color: #FFC107"></i>
-                            Request Pending HO
-                        </h5>
-
-                        <span class="badge" style="background-color: #FFC107;">
-                            {{ $totalFlightPerDay ?? 0 }}
-                        </span>
+            <div class="col-lg-4">
+                <div class="card-clean mb-4">
+                    <div class="card-header-clean d-flex justify-content-between align-items-center">
+                        <span>Request Pending HO</span>
+                        <span class="badge badge-pending">{{ $totalFlightPerDay ?? 0 }}</span>
                     </div>
-
-                    <div class="card-body p-0">
-                        <div class="table-responsive pending-table-wrapper">
-                            <table class="table table-hover align-middle mb-0 pending-table">
-                                <thead>
-                                    <tr>
-                                        <th>Barang</th>
-                                        <th>Jumlah</th>
-                                        <th>Catatan</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($pendingRequests ?? [] as $key => $row)
-                                        <tr>
-                                            <td class="fw-semibold">{{ $row->name ?? '-' }}</td>
-                                            <td>{{ $row->qty ?? '0' }}</td>
-                                            <td>{{ $row->note ?? '0' }}</td>
-                                            <td>
-                                                <span class="badge status-pending">
-                                                    {{ $row->status ?? '' }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="4" class="text-center py-4 text-muted">
-                                                Tidak ada request pending
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="p-3">
+                        <ul class="list-unstyled mb-0 pending-list">
+                            @forelse($pendingRequests ?? [] as $row)
+                                <li class="d-flex justify-content-between align-items-start">
+                                    <div class="pe-2">
+                                        <div class="fw-semibold">{{ $row->name ?? '-' }}</div>
+                                        <div class="muted-sm">{{ $row->note ?? '-' }}</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bold">{{ $row->qty ?? 0 }}</div>
+                                        <div class="muted-sm">{{ $row->status ?? '' }}</div>
+                                    </div>
+                                </li>
+                            @empty
+                                <li class="text-center text-muted py-2">Tidak ada request pending</li>
+                            @endforelse
+                        </ul>
                     </div>
-
                 </div>
 
-            </div>
-
-        </div>
-        {{-- Tabel Data Penerbangan Hari Ini --}}
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card shadow-sm border-0">
-
-                    {{-- Header --}}
-                    <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom">
-                        <h5 class="mb-0 fw-bold text-danger">
-                            <i class="bi bi-shield-exclamation me-2"></i>
-                            Peringatan: Stok Barang Menipis
-                        </h5>
-
-                        <span class="badge bg-danger">
-                            {{ $lowStock ?? 0 }}
-                        </span>
+                <div class="card-clean">
+                    <div class="card-header-clean d-flex justify-content-between align-items-center">
+                        <span>Stok Menipis (Preview)</span>
+                        <span class="badge badge-critical">{{ $lowStock ?? 0 }}</span>
                     </div>
-
-                    {{-- Body --}}
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Kode (SKU)</th>
-                                        <th>Nama Barang</th>
-                                        <th>Lokasi</th>
-                                        <th width="20%">Sisa Stok</th>
-                                        <th>Min. Stok</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    @forelse($lowStockProducts as $row)
-                                        @php
-                                            $percentage =
-                                                $row->min_stock > 0 ? ($row->stock / $row->min_stock) * 100 : 0;
-                                        @endphp
-
-                                        <tr class="table-light">
-                                            <td class="fw-semibold text-primary">
-                                                {{ $row->sku }}
-                                            </td>
-
-                                            <td>
-                                                {{ $row->name }}
-                                            </td>
-
-                                            <td>
-                                                <span class="badge bg-secondary">
-                                                    {{ $row->location }}
-                                                </span>
-                                            </td>
-
-                                            <td>
-                                                <div class="fw-bold text-danger">
-                                                    {{ $row->stock }} {{ $row->unit }}
-                                                </div>
-
-                                                {{-- Progress Bar --}}
-                                                <div class="progress mt-1 custom-progress">
-                                                    <div class="progress-bar bg-danger animated-progress"
-                                                        data-percentage="{{ $percentage }}" style="width: 0%">
-                                                    </div>
-                                                </div>
-                                            </td>
-
-                                            <td>
-                                                {{ $row->min_stock }}
-                                            </td>
-
-                                            <td>
-                                                <span class="badge bg-danger">
-                                                    Critical
-                                                </span>
-                                            </td>
-                                        </tr>
-
-                                    @empty
-                                        <tr>
-                                            <td colspan="6" class="text-center py-4">
-                                                <div class="text-success fw-semibold">
-                                                    🎉 Semua stok aman
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-
-                            </table>
-                        </div>
+                    <div class="p-3">
+                        @php $preview = collect($lowStockProducts ?? [])->take(5); @endphp
+                        @if($preview->isEmpty())
+                            <div class="text-center text-muted">Semua stok aman</div>
+                        @else
+                            <ul class="list-unstyled mb-0 pending-list">
+                                @foreach($preview as $p)
+                                    <li class="d-flex justify-content-between align-items-start">
+                                        <div class="pe-2">
+                                            <div class="fw-semibold">{{ $p->sku }} — {{ $p->name }}</div>
+                                            <div class="muted-sm">{{ $p->location }}</div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold text-danger">{{ $p->stock }} {{ $p->unit }}</div>
+                                            <div class="muted-sm">Min {{ $p->min_stock }}</div>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
                     </div>
-
                 </div>
             </div>
         </div>
 
+        <div class="card-clean mt-4">
+            <div class="card-header-clean d-flex justify-content-between align-items-center">
+                <span>Detail Stok Menipis</span>
+                <span class="muted-sm">Lengkap</span>
+            </div>
+            <div class="p-3 table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Kode (SKU)</th>
+                            <th>Nama Barang</th>
+                            <th>Lokasi</th>
+                            <th width="25%">Sisa Stok</th>
+                            <th>Min. Stok</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($lowStockProducts as $row)
+                            @php
+                                $percentage = $row->min_stock > 0 ? min(100, round(($row->stock / $row->min_stock) * 100)) : 0;
+                            @endphp
+                            <tr>
+                                <td class="fw-semibold text-primary">{{ $row->sku }}</td>
+                                <td>{{ $row->name }}</td>
+                                <td><span class="badge bg-secondary">{{ $row->location }}</span></td>
+                                <td>
+                                    <div class="fw-bold text-danger">{{ $row->stock }} {{ $row->unit }}</div>
+                                    <div class="progress mt-1 custom-progress">
+                                        <div class="progress-bar bg-danger" style="width: {{ $percentage }}%"></div>
+                                    </div>
+                                </td>
+                                <td>{{ $row->min_stock }}</td>
+                                <td><span class="badge badge-critical">Critical</span></td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-3">Semua stok aman</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
     </div>
 @endsection
