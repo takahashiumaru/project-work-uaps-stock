@@ -1,12 +1,8 @@
 <!DOCTYPE html>
-<html
-  lang="en"
-  class="light-style customizer-hide"
-  dir="ltr"
-  data-theme="theme-default"
-  data-assets-path="{{ asset('template/assets/') }}/"
-  data-template="vertical-menu-template-free"
->
+<html lang="en" class="light-style customizer-hide" dir="ltr"
+      data-theme="theme-default"
+      data-assets-path="{{ asset('template/assets/') }}/"
+      data-template="vertical-menu-template-free">
   <head>
     <meta charset="utf-8" />
     <meta
@@ -29,56 +25,111 @@
     <link rel="stylesheet" href="{{ asset('template/assets/vendor/css/pages/page-auth.css') }}" />
     <script src="{{ asset('template/assets/vendor/js/helpers.js') }}"></script>
     <script src="{{ asset('template/assets/js/config.js') }}"></script>
+    <style>
+        body{
+            background: radial-gradient(circle at top, #eef2ff 0, #f9fafb 45%, #f3f4f6 100%);
+        }
+        .auth-card{
+            border-radius: 20px !important;
+            box-shadow: 0 16px 45px rgba(15, 23, 42, 0.12);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+        }
+        .auth-logo{
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+        }
+        h4.page-title{
+            font-weight: 700;
+            letter-spacing: .02em;
+            color: #0f172a;
+        }
+        .page-subtitle{
+            font-size: .9rem;
+            color: #6b7280;
+        }
+        .form-label{
+            font-size: .85rem;
+            color: #374151;
+        }
+        .form-control{
+            border-radius: 12px;
+        }
+        .btn-primary{
+            border-radius: 999px;
+            font-weight: 600;
+            letter-spacing: .02em;
+        }
+    </style>
   </head>
   <body>
     <div class="container-xxl">
       <div class="authentication-wrapper authentication-basic container-p-y">
         <div class="authentication-inner">
-          <div class="card">
-            <div class="card-body">
-              <div class="app-brand justify-content-center">
-                <a href="javascript:void(0);" class="app-brand-link gap-2">
-                  <img src="{{ asset('storage/aps.jpeg') }}" alt="Logo" height="80">
+          <div class="card shadow-sm border-0 auth-card">
+            <div class="card-body p-4 p-md-5">
+              <div class="app-brand justify-content-center mb-3">
+                <a href="javascript:void(0);" class="app-brand-link gap-2 align-items-center">
+                  <img src="{{ asset('storage/aps.jpeg') }}" alt="Logo" height="72"
+                       class="auth-logo">
                 </a>
               </div>
-              <h4 class="mb-2">Lupa Password 🔒</h4>
-              <p class="mb-4">Masukkan NIP Anda untuk menerima OTP reset password melalui email.</p>
+              <h4 class="mb-1 text-center page-title">Lupa Password</h4>
+              <p class="mb-4 text-center page-subtitle">
+                Masukkan NIP Anda untuk menerima OTP reset password melalui email terdaftar.
+              </p>
+
               @if(session('error'))
-                <div class="alert alert-danger alert-dismissible" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
                   {{ session('error') }}
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
               @endif
               @if(session('otp_sent'))
-                <div class="alert alert-success alert-dismissible" role="alert">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
                   OTP telah dikirim ke email Anda.
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
               @endif
-              <form method="POST" action="{{ session('otp_sent') ? route('forgot.password.verify') : route('forgot.password.send') }}">
+
+              <form method="POST"
+                    action="{{ session('otp_sent') ? route('forgot.password.verify') : route('forgot.password.send') }}">
                 @csrf
                 <div class="mb-3">
-                    <label for="id" class="form-label">NIP</label>
-                    <input type="text" class="form-control @error('id') is-invalid @enderror" name="id" value="{{ old('id') }}" required autofocus {{ session('otp_sent') ? 'readonly' : '' }}>
-                    @error('id')
+                  <label for="id" class="form-label fw-semibold">NIP</label>
+                  <input type="text"
+                         class="form-control @error('id') is-invalid @enderror"
+                         name="id"
+                         value="{{ old('id') }}"
+                         required autofocus {{ session('otp_sent') ? 'readonly' : '' }}>
+                  @error('id')
                     <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                  @enderror
                 </div>
+
                 @if(session('otp_sent'))
-                    <div class="mb-3">
-                    <label for="otp" class="form-label">OTP</label>
-                    <input type="text" class="form-control @error('otp') is-invalid @enderror" name="otp" required>
+                  <div class="mb-3">
+                    <label for="otp" class="form-label fw-semibold">OTP</label>
+                    <input type="text"
+                           class="form-control @error('otp') is-invalid @enderror"
+                           name="otp" required>
                     @error('otp')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                      <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    </div>
-                    <button type="submit" class="btn btn-primary d-grid w-100">Verifikasi OTP</button>
+                  </div>
+                  <button type="submit" class="btn btn-primary d-grid w-100" style="border-radius:999px;">
+                    Verifikasi OTP
+                  </button>
                 @else
-                    <button type="submit" class="btn btn-primary d-grid w-100">Kirim OTP</button>
+                  <button type="submit" class="btn btn-primary d-grid w-100" style="border-radius:999px;">
+                    Kirim OTP
+                  </button>
                 @endif
-                </form>
+              </form>
+
               <div class="text-center mt-3">
-                <a href="{{ route('login') }}"><small>&larr; Kembali ke Login</small></a>
+                <a href="{{ route('login') }}" class="small">
+                  &larr; Kembali ke Login
+                </a>
               </div>
             </div>
           </div>

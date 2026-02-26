@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-
-<html lang="en" class="light-style customizer-hide" dir="ltr" data-theme="theme-default"
-    data-assets-path="{{ asset('template/assets/') }}/" data-template="vertical-menu-template-free">
-
+<html lang="en" class="light-style customizer-hide" dir="ltr"
+      data-theme="theme-default"
+      data-assets-path="{{ asset('template/assets/') }}/"
+      data-template="vertical-menu-template-free">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport"
@@ -33,97 +33,123 @@
     <script src="{{ asset('template/assets/vendor/js/helpers.js') }}"></script>
 
     <script src="{{ asset('template/assets/js/config.js') }}"></script>
-</head>
 
+    <style>
+        body{
+            background: radial-gradient(circle at top, #eef2ff 0, #f9fafb 45%, #f3f4f6 100%);
+        }
+        .auth-card{
+            border-radius: 20px !important;
+            box-shadow: 0 16px 45px rgba(15, 23, 42, 0.12);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+        }
+        .auth-logo{
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+        }
+        h4.page-title{
+            font-weight: 700;
+            letter-spacing: .02em;
+            color: #0f172a;
+        }
+        .page-subtitle{
+            font-size: .9rem;
+            color: #6b7280;
+        }
+        .form-label{
+            font-size: .85rem;
+            color: #374151;
+        }
+        .form-control{
+            border-radius: 12px;
+        }
+        .btn-primary{
+            border-radius: 999px;
+            font-weight: 600;
+            letter-spacing: .02em;
+        }
+    </style>
+</head>
 <body>
     <div class="container-xxl">
         <div class="authentication-wrapper authentication-basic container-p-y">
             <div class="authentication-inner">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="app-brand justify-content-center">
-                            <a href="javascript:void(0);" class="app-brand-link gap-2">
-                                {{-- Anda bisa mengganti logo SVG ini dengan elemen img Anda --}}
-                                <img src="{{ asset('storage/aps.jpeg') }}" alt="Logo" height="80">
+                <div class="card shadow-sm border-0 auth-card">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="app-brand justify-content-center mb-3">
+                            <a href="javascript:void(0);" class="app-brand-link gap-2 align-items-center">
+                                <img src="{{ asset('storage/aps.jpeg') }}" alt="Logo" height="72"
+                                     class="auth-logo">
                             </a>
                         </div>
-                        <h4 class="mb-2">Employee Login 👋</h4>
-                        <p class="mb-4">Silakan masuk dengan NIP Anda.</p>
+                        <h4 class="mb-1 text-center page-title">Employee Login</h4>
+                        <p class="mb-4 text-center page-subtitle">
+                            Masuk dengan NIP dan password akun APSone Anda.
+                        </p>
 
-                        {{-- LOGIKA PENANGANAN ERROR UMUM (DARI login.blade.php ASLI) --}}
                         @if ($errors->any() || session('error'))
-                            <div class="alert alert-danger alert-dismissible" role="alert">
-                                {{-- Tampilkan error dari validasi Laravel --}}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 @if ($errors->any())
                                     @foreach ($errors->all() as $error)
                                         {{ $error }}<br>
                                     @endforeach
                                 @endif
-
-                                {{-- Tampilkan error sesi (seperti jika login gagal) --}}
                                 @if (session('error'))
                                     {{ session('error') }}
                                 @endif
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                    aria-label="Close"></button>
+                                        aria-label="Close"></button>
                             </div>
                         @endif
 
-                        {{-- FORM DENGAN ROUTING DAN CSRF YANG DIHILANGKAN --}}
-                        <form id="formAuthentication" class="mb-3" action="{{ route('actionlogin') }}"
-                            method="POST">
+                        <form id="formAuthentication" class="mb-3" action="{{ route('actionlogin') }}" method="POST">
                             @csrf
 
-                            {{-- NIP FIELD (Menggantikan Email/Username) --}}
                             <div class="mb-3">
-                                <label for="id" class="form-label">NIP</label>
-                                <input type="text" class="form-control @error('id') is-invalid @enderror"
-                                    id="id" name="id" placeholder="Masukkan NIP Anda" autofocus required
-                                    pattern="[0-9]*" value="{{ old('id') }}" />
+                                <label for="id" class="form-label fw-semibold">NIP</label>
+                                <input type="text"
+                                       class="form-control @error('id') is-invalid @enderror"
+                                       id="id" name="id"
+                                       placeholder="Masukkan NIP Anda"
+                                       autofocus required pattern="[0-9]*"
+                                       value="{{ old('id') }}" />
                                 @error('id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="mb-3 form-password-toggle">
-                                <div class="d-flex justify-content-between">
-                                    <label class="form-label" for="password">Password</label>
-                                    <a href="{{ route('forgot.password.form') }}">
-                                        <small>Lupa Password?</small>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label class="form-label fw-semibold" for="password">Password</label>
+                                    <a href="{{ route('forgot.password.form') }}" class="small">
+                                        Lupa Password?
                                     </a>
                                 </div>
                                 <div class="input-group input-group-merge">
                                     <input type="password" id="password"
-                                        class="form-control @error('password') is-invalid @enderror" name="password"
-                                        placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                                        class="form-control @error('password') is-invalid @enderror"
+                                        name="password"
+                                        placeholder="••••••••••••"
                                         aria-describedby="password" required />
-                                    <span class="input-group-text cursor-pointer"><i
-                                            class="icon-base bx bx-show"></i></span>
+                                    <span class="input-group-text cursor-pointer">
+                                        <i class="icon-base bx bx-show"></i>
+                                    </span>
                                 </div>
-
                                 @error('password')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <!-- <div class="mb-3">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="remember-me" name="remember" />
-                    <label class="form-check-label" for="remember-me"> Ingat Saya </label>
-                  </div>
-                </div> -->
-
-                            <div class="mb-3">
-                                <button class="btn btn-primary d-grid w-100" type="submit">Login</button>
+                            <div class="mb-3 mt-4">
+                                <button class="btn btn-primary d-grid w-100" type="submit">
+                                    Masuk
+                                </button>
                             </div>
                         </form>
 
-                        {{-- <p class="text-center">
-                <span>New on our platform?</span>
-                <a href="auth-register-basic.html">
-                  <span>Create an account</span>
-                </a>
-              </p> --}}
+                        <p class="text-center text-muted small mb-0">
+                            &copy; {{ date('Y') }} APSone • Airport Passenger Service
+                        </p>
                     </div>
                 </div>
             </div>
@@ -146,12 +172,11 @@
             const icon = togglePassword.querySelector('i');
 
             togglePassword.addEventListener('click', function() {
-                // Jika tipe password, ubah ke text (show)
                 if (passwordInput.type === 'password') {
                     passwordInput.type = 'text';
                     icon.classList.remove('bx-show');
                     icon.classList.add('bx-hide');
-                } else { // jika text, ubah kembali ke password (hide)
+                } else {
                     passwordInput.type = 'password';
                     icon.classList.remove('bx-hide');
                     icon.classList.add('bx-show');
@@ -160,5 +185,4 @@
         });
     </script>
 </body>
-
 </html>
