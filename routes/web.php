@@ -16,6 +16,7 @@ use App\Http\Controllers\ProductController; // added
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\StockLogController;
 use App\Http\Controllers\WorkReportController;
+use App\Http\Controllers\AuthController;
 
 // Page
 Route::get('/profile/{id}', [UserController::class, 'profile'])->name('users.profile');
@@ -47,7 +48,7 @@ Route::get('stock-logs/export/pdf/page', [StockLogController::class, 'exportPdfP
 
 // API
 Route::get('/', [LoginController::class, 'login'])->name('login');
-Route::post('actionlogin', [LoginController::class, 'actionlogin'])->name('actionlogin');
+Route::post('actionlogin', [AuthController::class, 'actionlogin'])->name('actionlogin');
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/verify-otp', [LoginController::class, 'showOtpForm'])->name('verify.otp.form');
 Route::post('/verify-otp', [LoginController::class, 'verifyOtp'])->name('verify.otp');

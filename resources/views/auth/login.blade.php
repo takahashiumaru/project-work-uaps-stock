@@ -6,7 +6,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+        content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
     <title>Employee Login</title>
 
@@ -34,6 +34,20 @@
 
     <script src="{{ asset('template/assets/js/config.js') }}"></script>
 
+    {{-- Sinkron theme dari localStorage sebelum first paint (sama dengan layout.admin) --}}
+    <script>
+        (function () {
+            const STORAGE_KEY = 'pwus_theme';
+            const saved = localStorage.getItem(STORAGE_KEY) || 'light';
+            const root = document.documentElement;
+
+            root.setAttribute('data-theme', saved);
+            root.classList.toggle('dark-style', saved === 'dark');
+            root.classList.toggle('light-style', saved !== 'dark');
+            root.style.colorScheme = saved === 'dark' ? 'dark' : 'light';
+        })();
+    </script>
+
     <style>
         body{
             background: radial-gradient(circle at top, #eef2ff 0, #f9fafb 45%, #f3f4f6 100%);
@@ -42,10 +56,12 @@
             border-radius: 20px !important;
             box-shadow: 0 16px 45px rgba(15, 23, 42, 0.12);
             border: 1px solid rgba(148, 163, 184, 0.25);
+            background-color: #ffffff;
         }
         .auth-logo{
             border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+            max-height: 120px;   /* sebelumnya 90px, diperbesar */
+            width: auto;
         }
         h4.page-title{
             font-weight: 700;
@@ -68,6 +84,71 @@
             font-weight: 600;
             letter-spacing: .02em;
         }
+        /* styling icon mata */
+        .form-password-toggle .input-group-text{
+            border-radius: 0 12px 12px 0;
+            background-color: #f3f4f6;
+            border-color: #d1d5db;
+            cursor: pointer;
+            user-select: none;
+            pointer-events: auto;
+        }
+        .form-password-toggle .input-group-text *{
+            pointer-events: none; /* supaya klik selalu dianggap klik tombolnya */
+        }
+
+        /* ======== NIGHT MODE (login) ======== */
+        html[data-theme="dark"] body{
+            background: radial-gradient(circle at top, #020617 0, #020617 40%, #020617 100%);
+            color: #e5e7eb;
+        }
+        html[data-theme="dark"] .auth-card{
+            background-color: #020617;
+            border-color: #1f2937;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.65);
+        }
+        html[data-theme="dark"] h4.page-title{
+            color: #e5e7eb;
+        }
+        html[data-theme="dark"] .page-subtitle{
+            color: #9ca3af;
+        }
+        html[data-theme="dark"] .form-label{
+            color: #e5e7eb;
+        }
+        html[data-theme="dark"] .form-control{
+            background-color: #020617;
+            border-color: #334155;
+            color: #e5e7eb;
+        }
+        html[data-theme="dark"] .form-control::placeholder{
+            color: #6b7280;
+        }
+        html[data-theme="dark"] .btn-primary{
+            box-shadow: 0 12px 30px rgba(15,23,42,0.8);
+        }
+        html[data-theme="dark"] .alert-danger{
+            background-color: rgba(248,113,113,0.12);
+            border-color: rgba(248,113,113,0.4);
+            color: #fecaca;
+        }
+        html[data-theme="dark"] .text-muted{
+            color: #9ca3af !important;
+        }
+        html[data-theme="dark"] a.small{
+            color: #93c5fd;
+        }
+        html[data-theme="dark"] a.small:hover{
+            color: #bfdbfe;
+        }
+        /* icon mata di night mode: jangan putih */
+        html[data-theme="dark"] .form-password-toggle .input-group-text{
+            background-color: #020617;
+            border-color: #334155;
+        }
+        html[data-theme="dark"] .form-password-toggle .input-group-text i{
+            color: #9ca3af;
+        }
     </style>
 </head>
 <body>
@@ -78,8 +159,11 @@
                     <div class="card-body p-4 p-md-5">
                         <div class="app-brand justify-content-center mb-3">
                             <a href="javascript:void(0);" class="app-brand-link gap-2 align-items-center">
-                                <img src="{{ asset('storage/aps.jpeg') }}" alt="Logo" height="72"
-                                     class="auth-logo">
+                                {{-- Hanya satu IMG, src diganti via JS sesuai theme --}}
+                                <img src="{{ asset('storage/aps_light.png') }}"
+                                     alt="Logo"
+                                     class="auth-logo"
+                                     id="authLogo">
                             </a>
                         </div>
                         <h4 class="mb-1 text-center page-title">Employee Login</h4>
@@ -102,18 +186,30 @@
                             </div>
                         @endif
 
-                        <form id="formAuthentication" class="mb-3" action="{{ route('actionlogin') }}" method="POST">
+                        <form id="formAuthentication"
+                              class="mb-3"
+                              action="{{ route('actionlogin') }}"
+                              method="POST"
+                              autocomplete="on">
                             @csrf
 
+                            {{-- REMOVE hidden id field (breaks password manager heuristics) --}}
+                            {{-- <input type="hidden" name="id" id="login_id" ... > --}}
+
                             <div class="mb-3">
-                                <label for="id" class="form-label fw-semibold">NIP</label>
+                                <label for="username" class="form-label fw-semibold">NIP</label>
                                 <input type="text"
-                                       class="form-control @error('id') is-invalid @enderror"
-                                       id="id" name="id"
+                                       class="form-control @error('username') is-invalid @enderror"
+                                       id="username"
+                                       name="username"
                                        placeholder="Masukkan NIP Anda"
-                                       autofocus required pattern="[0-9]*"
-                                       value="{{ old('id') }}" />
-                                @error('id')
+                                       autofocus
+                                       required
+                                       pattern="[0-9]*"
+                                       inputmode="numeric"
+                                       autocomplete="username"
+                                       value="{{ old('username') }}" />
+                                @error('username')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -130,7 +226,9 @@
                                         class="form-control @error('password') is-invalid @enderror"
                                         name="password"
                                         placeholder="••••••••••••"
-                                        aria-describedby="password" required />
+                                        aria-describedby="password"
+                                        required
+                                        autocomplete="current-password" />
                                     <span class="input-group-text cursor-pointer">
                                         <i class="icon-base bx bx-show"></i>
                                     </span>
@@ -166,23 +264,47 @@
 
     <script async defer src="https://buttons.github.io/buttons.js"></script>
     <script>
+        // Toggle show/hide password – capture + stopPropagation (fix klik pertama kadang ketahan)
         document.addEventListener('DOMContentLoaded', function() {
-            const togglePassword = document.querySelector('.form-password-toggle .input-group-text');
-            const passwordInput = document.querySelector('#password');
-            const icon = togglePassword.querySelector('i');
+            const passwordInput = document.getElementById('password');
+            const toggleWrapper = document.querySelector('.form-password-toggle .input-group-text');
 
-            togglePassword.addEventListener('click', function() {
-                if (passwordInput.type === 'password') {
-                    passwordInput.type = 'text';
-                    icon.classList.remove('bx-show');
-                    icon.classList.add('bx-hide');
-                } else {
-                    passwordInput.type = 'password';
-                    icon.classList.remove('bx-hide');
-                    icon.classList.add('bx-show');
+            if (!passwordInput || !toggleWrapper) return;
+
+            toggleWrapper.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const icon = toggleWrapper.querySelector('i');
+                const isHidden = passwordInput.type === 'password';
+
+                passwordInput.type = isHidden ? 'text' : 'password';
+
+                if (icon) {
+                    icon.classList.toggle('bx-show', !isHidden);
+                    icon.classList.toggle('bx-hide', isHidden);
                 }
-            });
+            }, { capture: true });
+
+            {{-- REMOVE sync username -> hidden id (because hidden id removed) --}}
         });
+
+        // Sinkron logo login dengan theme (light/dark) dari localStorage
+        (function () {
+            const STORAGE_KEY = 'pwus_theme';
+            const logo = document.getElementById('authLogo');
+            if (!logo) return;
+
+            function applyLogo(theme) {
+                const base = '{{ asset('storage') }}';
+                logo.src = theme === 'dark'
+                    ? base + '/aps_dark.png'
+                    : base + '/aps_light.png';
+            }
+
+            const saved = localStorage.getItem(STORAGE_KEY) || 'light';
+            applyLogo(saved);
+        })();
     </script>
 </body>
 </html>

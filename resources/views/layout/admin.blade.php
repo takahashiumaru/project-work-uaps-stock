@@ -281,7 +281,7 @@
         html[data-theme="dark"] .select2-container--bootstrap-5 .select2-dropdown{
             background-color: var(--card-bg) !important;
             border-color: var(--card-border) !important;
-            color: var(--text) !important;
+            color: var (--text) !important;
         }
         html[data-theme="dark"] .select2-container--bootstrap-5 .select2-results__option{
             color: var(--text) !important;
@@ -333,7 +333,7 @@
             border-bottom: 1px solid var(--divider) !important;
         }
         #layout-menu .app-brand-logo img{
-            width: 56px !important;
+            width: 72px !important;   /* sebelumnya 56px, diperbesar */
             height: auto !important;
             display: block;
         }
@@ -526,6 +526,14 @@
         #themeToggleBtn i.bi-sun{
             color: #fbbf24 !important; /* amber */
         }
+
+        /* === LOGO LIGHT / DARK (sidebar) === */
+        .app-brand-logo img{
+            width: 72px !important;   /* sebelumnya 56px, diperbesar */
+            height: auto !important;
+            display: block;
+        }
+        /* tidak perlu lagi logo-light / logo-dark, cukup 1 img + JS */
     </style>
 </head>
 
@@ -539,7 +547,8 @@
                 <div class="app-brand demo">
                     <a href="{{ route('home') }}" class="app-brand-link">
                         <span class="app-brand-logo demo">
-                            <img src="{{ asset('storage/aps.jpeg') }}" alt="Logo" width="75">
+                            {{-- Satu IMG saja, src diubah via JS sesuai theme --}}
+                            <img src="{{ asset('storage/aps_light.png') }}" alt="Logo" id="sidebarLogo">
                         </span>
                         <!-- <span class="app-brand-text demo menu-text fw-bolder ms-2">Sneat</span> -->
                     </a>
@@ -714,7 +723,8 @@
                                 <script>
                                     document.write(new Date().getFullYear());
                                 </script>
-                                , made with ❤️
+                                {{-- , made with ❤️ --}}
+                                APSone • Airport Passenger Service
                                 <!-- by <a href="https://themeselection.com" target="_blank" class="footer-link fw-bolder">ThemeSelection</a> -->
                             </div>
                             <!-- <div>
@@ -797,6 +807,7 @@
         const STORAGE_KEY = 'pwus_theme';
         const root = document.documentElement;
         const btn = document.getElementById('themeToggleBtn');
+        const sidebarLogo = document.getElementById('sidebarLogo');
 
         function setBtnIcon(theme){
             if (!btn) return;
@@ -805,12 +816,21 @@
               : '<i class="bi bi-moon-stars" aria-hidden="true"></i>';
         }
 
+        function applyLogo(theme) {
+            if (!sidebarLogo) return;
+            const base = '{{ asset('storage') }}';
+            sidebarLogo.src = theme === 'dark'
+                ? base + '/aps_dark.png'
+                : base + '/aps_light.png';
+        }
+
         function applyTheme(theme) {
             root.setAttribute('data-theme', theme);
             root.classList.toggle('dark-style', theme === 'dark');
             root.classList.toggle('light-style', theme !== 'dark');
             root.style.colorScheme = theme === 'dark' ? 'dark' : 'light';
             setBtnIcon(theme);
+            applyLogo(theme);
         }
 
         const saved = localStorage.getItem(STORAGE_KEY) || 'light';

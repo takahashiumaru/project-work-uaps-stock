@@ -119,6 +119,45 @@
 .table thead th{background:#fbfcff;font-weight:800;color:#111827;border-bottom:1px solid #eef2f6;}
 .table td{vertical-align:middle;}
 
+/* DataTables custom styling to match template */
+.dataTables_wrapper .dataTables_paginate .paginate_button{
+    padding:4px 10px;
+    margin:0 2px;
+    border-radius:999px;
+    border:1px solid #e5e7eb !important;
+    background:#ffffff !important;
+    color:#4b5563 !important;
+    font-size:.8rem;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current{
+    background:linear-gradient(90deg,var(--accent),#3b5afe) !important;
+    color:#fff !important;
+    border-color:transparent !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover{
+    background:#eef2ff !important;
+    color:#111827 !important;
+}
+.dataTables_wrapper .dataTables_length select,
+.dataTables_wrapper .dataTables_filter input{
+    border-radius:8px;
+    border:1px solid var(--card-border);
+    padding:4px 8px;
+    font-size:.8rem;
+}
+.dataTables_wrapper .dataTables_filter{
+    text-align:right;
+}
+.dataTables_wrapper .dataTables_info{
+    font-size:.8rem;
+    color:#6b7280;
+}
+.dataTables_wrapper .dataTables_length label,
+.dataTables_wrapper .dataTables_filter label{
+    font-size:.8rem;
+    color:#6b7280;
+}
+
 /* Mobile layout */
 @media (max-width: 575.98px){
     .header-row{
@@ -148,6 +187,9 @@
 {{-- Select2 CSS (jika dibutuhkan, sudah seragam dgn stock_logs) --}}
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+{{-- DataTables CSS --}}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css"/>
 
 {{-- SweetAlert2 untuk notifikasi success --}}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -219,7 +261,7 @@
 
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table id="workReportsTable" class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
                             <th>Tanggal</th>
@@ -317,9 +359,13 @@
 @endsection
 
 @section('scripts')
-{{-- kalau layout.admin sudah punya section scripts, gunakan ini --}}
+{{-- DataTables JS --}}
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // SweetAlert success
         @if (session('success'))
             Swal.fire({
                 icon: 'success',
@@ -329,6 +375,30 @@
                 showConfirmButton: false
             });
         @endif
+
+        // Inisialisasi DataTables
+        $('#workReportsTable').DataTable({
+            pageLength: 10,
+            lengthMenu: [5, 10, 25, 50],
+            order: [[0, 'desc']], // urutkan berdasarkan tanggal (kolom pertama)
+            columnDefs: [
+                { orderable: false, targets: [2, 3, 4] } // non-sort kolom non relevan
+            ],
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ data",
+                zeroRecords: "Data tidak ditemukan",
+                info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                infoEmpty: "Tidak ada data",
+                infoFiltered: "(difilter dari _MAX_ total data)",
+                paginate: {
+                    first: "Pertama",
+                    last: "Terakhir",
+                    next: "›",
+                    previous: "‹"
+                }
+            }
+        });
 
         // Konfirmasi APPROVE
         document.querySelectorAll('.btn-approve-report').forEach(function(btn) {

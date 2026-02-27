@@ -25,6 +25,21 @@
     <link rel="stylesheet" href="{{ asset('template/assets/vendor/css/pages/page-auth.css') }}" />
     <script src="{{ asset('template/assets/vendor/js/helpers.js') }}"></script>
     <script src="{{ asset('template/assets/js/config.js') }}"></script>
+
+    {{-- Sinkron theme dari localStorage sebelum first paint (sama dengan layout.admin) --}}
+    <script>
+        (function () {
+            const STORAGE_KEY = 'pwus_theme';
+            const saved = localStorage.getItem(STORAGE_KEY) || 'light';
+            const root = document.documentElement;
+
+            root.setAttribute('data-theme', saved);
+            root.classList.toggle('dark-style', saved === 'dark');
+            root.classList.toggle('light-style', saved !== 'dark');
+            root.style.colorScheme = saved === 'dark' ? 'dark' : 'light';
+        })();
+    </script>
+
     <style>
         body{
             background: radial-gradient(circle at top, #eef2ff 0, #f9fafb 45%, #f3f4f6 100%);
@@ -33,10 +48,12 @@
             border-radius: 20px !important;
             box-shadow: 0 16px 45px rgba(15, 23, 42, 0.12);
             border: 1px solid rgba(148, 163, 184, 0.25);
+            background-color: #ffffff;
         }
         .auth-logo{
             border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+            max-height: 120px;
+            width: auto;
         }
         h4.page-title{
             font-weight: 700;
@@ -59,6 +76,56 @@
             font-weight: 600;
             letter-spacing: .02em;
         }
+
+        /* ======== NIGHT MODE (forgot password) ======== */
+        html[data-theme="dark"] body{
+            background: radial-gradient(circle at top, #020617 0, #020617 40%, #020617 100%);
+            color: #e5e7eb;
+        }
+        html[data-theme="dark"] .auth-card{
+            background-color: #020617;
+            border-color: #1f2937;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.65);
+        }
+        html[data-theme="dark"] h4.page-title{
+            color: #e5e7eb;
+        }
+        html[data-theme="dark"] .page-subtitle{
+            color: #9ca3af;
+        }
+        html[data-theme="dark"] .form-label{
+            color: #e5e7eb;
+        }
+        html[data-theme="dark"] .form-control{
+            background-color: #020617;
+            border-color: #334155;
+            color: #e5e7eb;
+        }
+        html[data-theme="dark"] .form-control::placeholder{
+            color: #6b7280;
+        }
+        html[data-theme="dark"] .btn-primary{
+            box-shadow: 0 12px 30px rgba(15,23,42,0.8);
+        }
+        html[data-theme="dark"] .alert-danger{
+            background-color: rgba(248,113,113,0.12);
+            border-color: rgba(248,113,113,0.4);
+            color: #fecaca;
+        }
+        html[data-theme="dark"] .alert-success{
+            background-color: rgba(34,197,94,0.10);
+            border-color: rgba(34,197,94,0.4);
+            color: #bbf7d0;
+        }
+        html[data-theme="dark"] .text-muted{
+            color: #9ca3af !important;
+        }
+        html[data-theme="dark"] a.small{
+            color: #93c5fd;
+        }
+        html[data-theme="dark"] a.small:hover{
+            color: #bfdbfe;
+        }
     </style>
   </head>
   <body>
@@ -69,8 +136,7 @@
             <div class="card-body p-4 p-md-5">
               <div class="app-brand justify-content-center mb-3">
                 <a href="javascript:void(0);" class="app-brand-link gap-2 align-items-center">
-                  <img src="{{ asset('storage/aps.jpeg') }}" alt="Logo" height="72"
-                       class="auth-logo">
+                  <img src="{{ asset('storage/aps_light.png') }}" alt="Logo" class="auth-logo" id="forgotLogo">
                 </a>
               </div>
               <h4 class="mb-1 text-center page-title">Lupa Password</h4>
@@ -143,5 +209,23 @@
     <script src="{{ asset('template/assets/vendor/js/menu.js') }}"></script>
     <script src="{{ asset('template/assets/js/main.js') }}"></script>
     <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <script>
+      // Sinkron logo forgot password dengan theme (light/dark)
+      (function () {
+          const STORAGE_KEY = 'pwus_theme';
+          const logo = document.getElementById('forgotLogo');
+          if (!logo) return;
+
+          function applyLogo(theme) {
+              const base = '{{ asset('storage') }}';
+              logo.src = theme === 'dark'
+                  ? base + '/aps_dark.png'
+                  : base + '/aps_light.png';
+          }
+
+          const saved = localStorage.getItem(STORAGE_KEY) || 'light';
+          applyLogo(saved);
+      })();
+    </script>
   </body>
 </html>
