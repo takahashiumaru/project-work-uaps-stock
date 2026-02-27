@@ -236,6 +236,7 @@ html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .page-item .pag
     .header-actions{
         flex-direction: column;
         align-items: stretch;
+        flex-wrap: nowrap;
     }
     .header-actions .btn-create,
     .header-actions .btn-export{
@@ -257,17 +258,44 @@ html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .page-item .pag
 .dataTables_wrapper .dataTables_filter{
     display: none !important;
 }
+
+/* REMOVE DataTables pagination styling; Laravel pagination will use bootstrap-5 */
+.dataTables_wrapper,
+.dataTables_wrapper *{
+    /* leave existing table styles; just don't rely on DT paginate */
+}
+
+/* NEW: align action buttons like products index */
+.header-actions{
+    flex: 0 0 auto;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-wrap: nowrap; /* IMPORTANT: prevent vertical stacking */
+}
+
+/* FIX: aksi HO jangan jadi atas-bawah saat layar kecil */
+#workReportsTable th:last-child,
+#workReportsTable td:last-child{
+    width: 140px;              /* tambah panjang kolom aksi */
+    min-width: 140px;
+    white-space: nowrap;       /* cegah wrap */
+}
+
+/* group actions always side-by-side */
+#workReportsTable .action-group{
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+#workReportsTable .action-group form{
+    margin: 0;                 /* hilangkan gap default */
+}
 </style>
-
-{{-- Select2 CSS (jika dibutuhkan, sudah seragam dgn stock_logs) --}}
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
-
-{{-- DataTables CSS --}}
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css"/>
-
-{{-- SweetAlert2 untuk notifikasi success --}}
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @endsection
 
 
@@ -282,7 +310,7 @@ html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .page-item .pag
         </div>
 
         {{-- SUSUNAN TOMBOL: CREATE (biru) -> EXCEL (hijau) --}}
-        <div class="header-actions d-flex flex-wrap gap-2 justify-content-end">
+        <div class="header-actions">
             <a href="{{ route('work-reports.create') }}" class="btn-create">
                 <i class="bi bi-plus-lg"></i> Catat Laporan
             </a>
@@ -384,33 +412,35 @@ html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .page-item .pag
                                 </td>
                                 <td class="text-center">
                                     @if($r->status === 'Pending')
-                                        {{-- FORM APPROVE --}}
-                                        <form method="POST"
-                                              action="{{ route('work-reports.update-status', $r) }}"
-                                              class="d-inline form-approve-report">
-                                            @csrf
-                                            <input type="hidden" name="action" value="approve">
-                                            <button type="button"
-                                                    class="action-btn approve btn-approve-report"
-                                                    data-title="{{ addslashes($r->title) }}"
-                                                    title="Approve">
-                                                <i class="bx bx-check"></i>
-                                            </button>
-                                        </form>
+                                        <div class="action-group">
+                                            {{-- FORM APPROVE --}}
+                                            <form method="POST"
+                                                  action="{{ route('work-reports.update-status', $r) }}"
+                                                  class="form-approve-report">
+                                                @csrf
+                                                <input type="hidden" name="action" value="approve">
+                                                <button type="button"
+                                                        class="action-btn approve btn-approve-report"
+                                                        data-title="{{ addslashes($r->title) }}"
+                                                        title="Approve">
+                                                    <i class="bx bx-check"></i>
+                                                </button>
+                                            </form>
 
-                                        {{-- FORM REJECT --}}
-                                        <form method="POST"
-                                              action="{{ route('work-reports.update-status', $r) }}"
-                                              class="d-inline form-reject-report">
-                                            @csrf
-                                            <input type="hidden" name="action" value="reject">
-                                            <button type="button"
-                                                    class="action-btn reject btn-reject-report"
-                                                    data-title="{{ addslashes($r->title) }}"
-                                                    title="Reject">
-                                                <i class="bx bx-x"></i>
-                                            </button>
-                                        </form>
+                                            {{-- FORM REJECT --}}
+                                            <form method="POST"
+                                                  action="{{ route('work-reports.update-status', $r) }}"
+                                                  class="form-reject-report">
+                                                @csrf
+                                                <input type="hidden" name="action" value="reject">
+                                                <button type="button"
+                                                        class="action-btn reject btn-reject-report"
+                                                        data-title="{{ addslashes($r->title) }}"
+                                                        title="Reject">
+                                                    <i class="bx bx-x"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     @else
                                         <small class="text-muted">Selesai</small>
                                     @endif
@@ -428,21 +458,27 @@ html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .page-item .pag
                     </tbody>
                 </table>
             </div>
+
+            {{-- NEW: Laravel pagination like products index --}}
+            <div class="d-flex justify-content-end mt-3">
+                {{ $reports->appends(request()->except('page'))->links('pagination::bootstrap-5') }}
+            </div>
         </div>
     </div>
 </div>
 @endsection
 
 @section('scripts')
-{{-- DataTables JS --}}
-<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
-
+{{-- REMOVE DataTables JS + init (paging/search) --}}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Ensure Swal theme applied (in case Swal loaded after admin helper ran)
+        if (window.__applySwalTheme) window.__applySwalTheme();
+
         // SweetAlert success
         @if (session('success'))
             Swal.fire({
+                ...((window.getSwalThemeOptions && window.getSwalThemeOptions()) || {}),
                 icon: 'success',
                 title: 'Berhasil',
                 text: '{{ session('success') }}',
@@ -451,44 +487,6 @@ html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .page-item .pag
             });
         @endif
 
-        // Inisialisasi DataTables
-        const table = $('#workReportsTable').DataTable({
-            pageLength: 10,
-            lengthChange: false,   // remove "Tampilkan _MENU_ data"
-            searching: false,      // remove "Cari:" + disable DT search (pakai form search kamu)
-            info: true,
-            paging: true,
-            pagingType: 'simple_numbers',
-
-            // show only: table + info(left) + pagination(right)
-            // (no length, no filter)
-            dom: "<'row'<'col-12'tr>>" +
-                 "<'row align-items-center mt-2'<'col-sm-6'i><'col-sm-6'p>>",
-
-            order: [[0, 'desc']],
-            columnDefs: [
-                { orderable: false, targets: [2, 3, 4] }
-            ],
-            language: {
-                zeroRecords: "Data tidak ditemukan",
-                info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
-                infoEmpty: "Tidak ada data",
-                infoFiltered: "", // not used (searching disabled)
-                paginate: {
-                    next: "›",
-                    previous: "‹"
-                }
-            },
-
-            // hide pagination if only 1 page
-            drawCallback: function(settings){
-                const api = this.api();
-                const pages = api.page.info().pages;
-                const wrapper = $(api.table().container());
-                wrapper.find('.dataTables_paginate').toggle(pages > 1);
-            }
-        });
-
         // Konfirmasi APPROVE
         document.querySelectorAll('.btn-approve-report').forEach(function(btn) {
             btn.addEventListener('click', function () {
@@ -496,6 +494,7 @@ html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .page-item .pag
                 const title  = this.dataset.title || 'laporan ini';
 
                 Swal.fire({
+                    ...((window.getSwalThemeOptions && window.getSwalThemeOptions()) || {}),
                     title: 'Approve Laporan?',
                     html: `Yakin ingin <strong>APPROVE</strong> <br><em>${title}</em>?`,
                     icon: 'question',
@@ -505,9 +504,7 @@ html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .page-item .pag
                     confirmButtonText: 'Ya, Approve',
                     cancelButtonText: 'Batal'
                 }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
+                    if (result.isConfirmed) form.submit();
                 });
             });
         });
@@ -519,6 +516,7 @@ html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .page-item .pag
                 const title  = this.dataset.title || 'laporan ini';
 
                 Swal.fire({
+                    ...((window.getSwalThemeOptions && window.getSwalThemeOptions()) || {}),
                     title: 'Reject Laporan?',
                     html: `Yakin ingin <strong>REJECT</strong> <br><em>${title}</em>?`,
                     icon: 'warning',
@@ -528,9 +526,7 @@ html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .page-item .pag
                     confirmButtonText: 'Ya, Reject',
                     cancelButtonText: 'Batal'
                 }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
+                    if (result.isConfirmed) form.submit();
                 });
             });
         });

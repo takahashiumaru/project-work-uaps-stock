@@ -15,19 +15,23 @@ class WorkReportController extends Controller
         $user = $request->user();
         $role = $user->role ?? 'SBY';
 
-        $query = WorkReport::query()->orderByDesc('created_at');
+        $q = $request->query('q');
 
-        // filter pencarian seperti "Cari nama / SKU..."
-        if ($search = $request->get('q')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
+        $reportsQuery = WorkReport::query()
+            ->when($q, function ($query) use ($q) {
+                $query->where(function ($qq) use ($q) {
+                    $qq->where('title', 'like', "%{$q}%")
+                       ->orWhere('description', 'like', "%{$q}%");
+                });
+            })
+            ->orderByDesc('created_at');
 
-        $reports = $query->get();
+        $reports = $reportsQuery->paginate(10);
 
-        return view('work_reports.index', compact('reports', 'role'));
+        return view('work_reports.index', [
+            'reports' => $reports,
+            'role' => $role,
+        ]);
     }
 
     public function create(Request $request)

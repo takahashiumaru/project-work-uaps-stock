@@ -154,6 +154,28 @@
             color: var(--text) !important;
         }
 
+        /* FIX: some pages hardcode white header background; force follow theme */
+        .card-header-clean{
+            background: var(--card-bg) !important;
+            border-color: var(--card-border) !important;
+            color: var(--text) !important;
+        }
+
+        /* FIX: Work report attachment button ("Lihat") stayed white in dark mode */
+        html[data-theme="dark"] .btn-outline-secondary{
+            background: rgba(255,255,255,0.04) !important;
+            border-color: rgba(255,255,255,0.14) !important;
+            color: var(--text) !important;
+        }
+        html[data-theme="dark"] .btn-outline-secondary:hover{
+            background: rgba(255,255,255,0.08) !important;
+            border-color: rgba(255,255,255,0.22) !important;
+            color: var(--text) !important;
+        }
+        html[data-theme="dark"] .btn-outline-secondary:focus{
+            box-shadow: 0 0 0 .25rem rgba(86,97,248,.25) !important;
+        }
+
         /* Navbar (top bar) */
         html[data-theme="dark"] .layout-navbar,
         html[data-theme="dark"] .bg-navbar-theme{
@@ -498,7 +520,6 @@
             align-items: center;
             justify-content: center;
             border-radius: 10px;
-            margin-left: 10px; /* NEW */
         }
         #themeToggleBtn i{
             font-size: 1.05rem;
@@ -527,13 +548,53 @@
             color: #fbbf24 !important; /* amber */
         }
 
-        /* === LOGO LIGHT / DARK (sidebar) === */
-        .app-brand-logo img{
-            width: 72px !important;   /* sebelumnya 56px, diperbesar */
-            height: auto !important;
-            display: block;
+        /* Topbar icon buttons (theme + notif) consistent sizing */
+        .topbar-icon-btn{
+            width: 38px;
+            height: 38px;
+            padding: 0 !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            border-color: var(--divider) !important;
         }
-        /* tidak perlu lagi logo-light / logo-dark, cukup 1 img + JS */
+        .topbar-icon-btn i{
+            font-size: 1.05rem;
+            line-height: 1;
+        }
+        .topbar-icon-btn:hover{
+            background: rgba(86,97,248,0.08);
+            border-color: rgba(86,97,248,0.25) !important;
+        }
+        html[data-theme="dark"] .topbar-icon-btn:hover{
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.14) !important;
+        }
+
+        /* remove old left-margin behavior (spacing handled by gap) */
+        #themeToggleBtn{
+            margin-left: 0 !important;
+        }
+
+        /* notif badge */
+        .notif-badge{
+            position:absolute;
+            top:-4px;
+            right:-4px;
+            min-width:18px;
+            height:18px;
+            padding:0 5px;
+            border-radius:999px;
+            background: #ef4444;
+            color:#fff;
+            font-size:.72rem;
+            font-weight:800;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            border: 2px solid var(--nav-bg);
+        }
     </style>
 </head>
 
@@ -636,22 +697,99 @@
                     </div>
 
                     <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-                        <!-- Search -->
-                        <!-- <div class="navbar-nav align-items-center">
-                <div class="nav-item d-flex align-items-center">
-                  <i class="bx bx-search fs-4 lh-0"></i>
-                  <input
-                    type="text"
-                    class="form-control border-0 shadow-none"
-                    placeholder="Search..."
-                    aria-label="Search..."
-                  />
-                </div>
-              </div> -->
-                        <!-- /Search -->
+                        <ul class="navbar-nav flex-row align-items-center ms-auto gap-2">
+                            {{-- 1) Light/Dark --}}
+                            <li class="nav-item">
+                                <button type="button" id="themeToggleBtn" class="btn btn-outline-secondary btn-sm topbar-icon-btn" aria-label="Toggle theme">
+                                    <i class="bi bi-moon-stars"></i>
+                                </button>
+                            </li>
 
-                        <ul class="navbar-nav flex-row align-items-center ms-auto">
-                            <!-- User -->
+                            {{-- 2) Notif --}}
+                            <li class="nav-item dropdown">
+                                <a class="btn btn-outline-secondary btn-sm topbar-icon-btn position-relative"
+                                   href="javascript:void(0);"
+                                   id="notifBtn"
+                                   data-bs-toggle="dropdown"
+                                   aria-expanded="false"
+                                   aria-label="Notifications"
+                                   title="Notifikasi">
+                                    <i class="bx bx-bell"></i>
+
+                                    @if(($pendingNotifTotal ?? 0) > 0)
+                                        <span class="notif-badge">{{ $pendingNotifTotal }}</span>
+                                    @endif
+                                </a>
+
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notifBtn" style="min-width: 340px;">
+                                    <li class="dropdown-header d-flex align-items-center justify-content-between">
+                                        <span>Notifikasi</span>
+                                        @if(($pendingNotifTotal ?? 0) > 0)
+                                            <span class="badge bg-danger">{{ $pendingNotifTotal }} Pending</span>
+                                        @endif
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+
+                                    @if(($pendingNotifTotal ?? 0) === 0)
+                                        <li>
+                                            <span class="dropdown-item-text text-muted small">
+                                                Belum ada notifikasi.
+                                            </span>
+                                        </li>
+                                    @else
+                                        {{-- SECTION: Pending Request HO --}}
+                                        @if(($pendingRequestsCount ?? 0) > 0)
+                                            <li class="px-3 pt-1 pb-1 text-uppercase small text-muted fw-semibold">
+                                                Request HO ({{ $pendingRequestsCount }})
+                                            </li>
+                                            @foreach($pendingRequestsLatest as $req)
+                                                @continue(($req->status ?? null) !== 'Pending')
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ route('requests.index', ['status' => 'Pending']) }}">
+                                                        <div class="d-flex flex-column">
+                                                            <span class="fw-semibold text-truncate">
+                                                                Request #{{ $req->id }}
+                                                                @if(isset($req->qty_requested))
+                                                                    • Qty {{ $req->qty_requested }}
+                                                                @endif
+                                                                @if(isset($req->product) && !empty($req->product?->name))
+                                                                    • {{ $req->product->name }}
+                                                                @endif
+                                                            </span>
+                                                            <small class="text-muted">
+                                                                {{ ($req->request_date ?? $req->created_at)?->diffForHumans() }}
+                                                            </small>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                            @endforeach
+                                            <li><hr class="dropdown-divider"></li>
+                                        @endif
+
+                                        {{-- REMOVE: Pending Work Reports section (do not show) --}}
+                                        {{--
+                                        @if(($pendingWorkReportsCount ?? 0) > 0)
+                                            <li class="px-3 pt-1 pb-1 text-uppercase small text-muted fw-semibold">
+                                                Laporan Pekerjaan ({{ $pendingWorkReportsCount }})
+                                            </li>
+                                            @foreach($pendingWorkReportsLatest as $wr)
+                                                @continue(($wr->status ?? null) !== 'Pending')
+                                                <li> ... </li>
+                                            @endforeach
+                                            <li><hr class="dropdown-divider"></li>
+                                        @endif
+                                        --}}
+
+                                        <li>
+                                            <a class="dropdown-item text-center fw-semibold" href="{{ route('requests.index', ['status' => 'Pending']) }}">
+                                                Buka halaman pending
+                                            </a>
+                                        </li>
+                                    @endif
+                                </ul>
+                            </li>
+
+                            {{-- 3) Profile --}}
                             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                                     <div class="avatar avatar-online">
@@ -694,12 +832,6 @@
                                         </form>
                                     </li>
                                 </ul>
-                            </li>
-                            <!--/ User -->
-                            <li class="nav-item">
-                                <button type="button" id="themeToggleBtn" class="btn btn-outline-secondary btn-sm" aria-label="Toggle theme">
-                                    <i class="bi bi-moon-stars"></i>
-                                </button>
                             </li>
                         </ul>
                     </div>
@@ -831,6 +963,9 @@
             root.style.colorScheme = theme === 'dark' ? 'dark' : 'light';
             setBtnIcon(theme);
             applyLogo(theme);
+
+            // NEW: keep SweetAlert theme in sync
+            if (window.__applySwalTheme) window.__applySwalTheme();
         }
 
         const saved = localStorage.getItem(STORAGE_KEY) || 'light';
@@ -844,6 +979,40 @@
             });
         }
     })();
+    </script>
+
+    {{-- NEW: Global SweetAlert2 theme (dark/light) --}}
+    <script>
+      (function () {
+        function currentTheme(){
+          return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+        }
+
+        // expose helper for pages
+        window.getSwalThemeOptions = function getSwalThemeOptions(){
+          const dark = currentTheme() === 'dark';
+          return dark ? {
+            background: '#0f172a',
+            color: '#e5e7eb',
+            confirmButtonColor: '#5661f8',
+            cancelButtonColor: '#334155'
+          } : {
+            background: '#ffffff',
+            color: '#0f172a',
+            confirmButtonColor: '#5661f8',
+            cancelButtonColor: '#6b7280'
+          };
+        };
+
+        // apply mixin globally (so Swal.fire() inherits default colors)
+        window.__applySwalTheme = function __applySwalTheme(){
+          if (!window.Swal || typeof window.Swal.mixin !== 'function') return;
+          window.Swal = window.Swal.mixin(window.getSwalThemeOptions());
+        };
+
+        // try apply on load (if Swal already loaded on page)
+        window.__applySwalTheme();
+      })();
     </script>
 
     <script>
