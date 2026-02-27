@@ -119,43 +119,112 @@
 .table thead th{background:#fbfcff;font-weight:800;color:#111827;border-bottom:1px solid #eef2f6;}
 .table td{vertical-align:middle;}
 
-/* DataTables custom styling to match template */
-.dataTables_wrapper .dataTables_paginate .paginate_button{
-    padding:4px 10px;
-    margin:0 2px;
-    border-radius:999px;
-    border:1px solid #e5e7eb !important;
-    background:#ffffff !important;
-    color:#4b5563 !important;
-    font-size:.8rem;
-}
-.dataTables_wrapper .dataTables_paginate .paginate_button.current{
-    background:linear-gradient(90deg,var(--accent),#3b5afe) !important;
-    color:#fff !important;
-    border-color:transparent !important;
-}
-.dataTables_wrapper .dataTables_paginate .paginate_button:hover{
-    background:#eef2ff !important;
-    color:#111827 !important;
-}
-.dataTables_wrapper .dataTables_length select,
-.dataTables_wrapper .dataTables_filter input{
-    border-radius:8px;
-    border:1px solid var(--card-border);
-    padding:4px 8px;
-    font-size:.8rem;
-}
-.dataTables_wrapper .dataTables_filter{
-    text-align:right;
-}
+/* bottom row spacing */
 .dataTables_wrapper .dataTables_info{
-    font-size:.8rem;
-    color:#6b7280;
+    font-size: .8rem;
+    color: var(--muted);
 }
-.dataTables_wrapper .dataTables_length label,
-.dataTables_wrapper .dataTables_filter label{
-    font-size:.8rem;
-    color:#6b7280;
+
+/* keep layout similar */
+.dataTables_wrapper .dataTables_paginate{
+    padding-top: .5rem;
+}
+.dataTables_wrapper .dataTables_paginate .pagination{
+    margin: 0 !important;
+}
+
+/* normalize BOTH renderers:
+   - DataTables default: .paginate_button
+   - Bootstrap renderer: .page-link
+*/
+.dataTables_wrapper .dataTables_paginate .paginate_button,
+.dataTables_wrapper .dataTables_paginate .page-item .page-link{
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+
+    height: 34px;
+    min-width: 34px;
+    padding: 0 10px !important;
+
+    border-radius: .5rem !important;         /* product index biasanya rounded */
+    border: 1px solid var(--card-border) !important;
+    background: var(--card-bg) !important;
+    color: var(--muted) !important;
+
+    font-size: .85rem !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+
+    box-shadow: none !important;
+    outline: none !important;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover,
+.dataTables_wrapper .dataTables_paginate .page-item .page-link:hover{
+    background: rgba(86,97,248,.08) !important;
+    color: #111827 !important;
+    border-color: rgba(86,97,248,.18) !important;
+}
+
+/* current/active */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .page-item.active .page-link{
+    background: linear-gradient(90deg,var(--accent),#3b5afe) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+}
+
+/* disabled */
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+.dataTables_wrapper .dataTables_paginate .page-item.disabled .page-link{
+    opacity: .55 !important;
+    cursor: not-allowed !important;
+}
+
+/* arrows visible */
+.dataTables_wrapper .dataTables_paginate .paginate_button.previous,
+.dataTables_wrapper .dataTables_paginate .paginate_button.next{
+    font-weight: 900 !important;
+    color: #111827 !important;
+}
+html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button.previous,
+html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button.next{
+    color: var(--text) !important;
+}
+
+/* dark mode tweaks to follow global theme */
+html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button,
+html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .page-item .page-link{
+    border-color: var(--card-border) !important;
+    background: var(--card-bg) !important;
+    color: var(--muted) !important;
+}
+html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button:hover,
+html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .page-item .page-link:hover{
+    background: rgba(255,255,255,0.05) !important;
+    border-color: rgba(255,255,255,0.10) !important;
+    color: var(--text) !important;
+}
+
+/* ensure arrows/prev/next never become square blocks */
+.dataTables_wrapper .dataTables_paginate .paginate_button.previous,
+.dataTables_wrapper .dataTables_paginate .paginate_button.next{
+    min-width: 44px;
+    text-align: center !important;
+}
+
+/* mobile: center nicely */
+@media (max-width: 575.98px){
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate{
+        text-align: center !important;
+        width: 100%;
+    }
+    .dataTables_wrapper .dataTables_paginate{
+        display: flex;
+        justify-content: center;
+    }
 }
 
 /* Mobile layout */
@@ -181,6 +250,12 @@
     .card-search-form{
         width:100%;
     }
+}
+
+/* OPTIONAL: if something still renders length/filter via css, force hide */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter{
+    display: none !important;
 }
 </style>
 
@@ -377,26 +452,40 @@
         @endif
 
         // Inisialisasi DataTables
-        $('#workReportsTable').DataTable({
+        const table = $('#workReportsTable').DataTable({
             pageLength: 10,
-            lengthMenu: [5, 10, 25, 50],
-            order: [[0, 'desc']], // urutkan berdasarkan tanggal (kolom pertama)
+            lengthChange: false,   // remove "Tampilkan _MENU_ data"
+            searching: false,      // remove "Cari:" + disable DT search (pakai form search kamu)
+            info: true,
+            paging: true,
+            pagingType: 'simple_numbers',
+
+            // show only: table + info(left) + pagination(right)
+            // (no length, no filter)
+            dom: "<'row'<'col-12'tr>>" +
+                 "<'row align-items-center mt-2'<'col-sm-6'i><'col-sm-6'p>>",
+
+            order: [[0, 'desc']],
             columnDefs: [
-                { orderable: false, targets: [2, 3, 4] } // non-sort kolom non relevan
+                { orderable: false, targets: [2, 3, 4] }
             ],
             language: {
-                search: "Cari:",
-                lengthMenu: "Tampilkan _MENU_ data",
                 zeroRecords: "Data tidak ditemukan",
                 info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
                 infoEmpty: "Tidak ada data",
-                infoFiltered: "(difilter dari _MAX_ total data)",
+                infoFiltered: "", // not used (searching disabled)
                 paginate: {
-                    first: "Pertama",
-                    last: "Terakhir",
                     next: "›",
                     previous: "‹"
                 }
+            },
+
+            // hide pagination if only 1 page
+            drawCallback: function(settings){
+                const api = this.api();
+                const pages = api.page.info().pages;
+                const wrapper = $(api.table().container());
+                wrapper.find('.dataTables_paginate').toggle(pages > 1);
             }
         });
 
