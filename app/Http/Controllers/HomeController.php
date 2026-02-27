@@ -13,6 +13,7 @@ use Illuminate\View\View;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Http\Request;
 use App\Models\Request as StockRequest; // <-- tambah import model Request sebagai alias
+use App\Models\WorkReport;
 
 class HomeController extends Controller
 {
@@ -129,22 +130,24 @@ $productLocationTotals = $productLocationData
         $sickData = [];
         $leaveData = [];
 
-        // for ($i = 6; $i >= 0; $i--) {
-        //     $date = Carbon::now()->subDays($i);
-        //     $dateString = $date->format('Y-m-d');
-        //     $dayName = $date->locale('id')->dayName;
+        // NEW: Tren Laporan Pekerjaan (Approved) - 7 hari terakhir
+        $start = Carbon::today()->subDays(6);
+        $end   = Carbon::today();
 
-        //     // Label untuk Line Chart dan Bar Chart
-        //     $lineChartLabels[] = $dayName;
-        //     $barChartLabels[] = $dayName;
+        $workReportCounts = WorkReport::query()
+            ->where('status', '=', 'Approved')
+            ->whereDate('work_date', '>=', $start)
+            ->whereDate('work_date', '<=', $end)
+            ->selectRaw('DATE(work_date) as d, COUNT(*) as total')
+            ->groupBy('d')
+            ->orderBy('d')
+            ->pluck('total', 'd'); // ['2026-02-21' => 3, ...]
 
-        //     // Data Line Chart: Total penerbangan per hari
-        //     $lineChartData[] = flights::whereDate('created_at', $dateString)->count();
-
-        //     // Data Bar Chart: Cuti & Sakit per hari (SUDAH DIPERBAIKI)
-        //     $sickData[] = Leave::whereDate('start_date', $dateString)->where('leave_type', 'Cuti Sakit')->count();
-        //     $leaveData[] = Leave::whereDate('start_date', $dateString)->where('leave_type', 'Cuti Tahunan')->count();
-        // }
+        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+            $key = $date->format('Y-m-d');
+            $lineChartLabels[] = $date->translatedFormat('d M'); // mis "21 Feb"
+            $lineChartData[] = (int) ($workReportCounts[$key] ?? 0);
+        }
 
         // Data Doughnut Chart: Distribusi staff berdasarkan role
         $doughnutData = User::select('role', DB::raw('count(*) as total'))

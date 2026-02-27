@@ -230,7 +230,7 @@
                                                 </button>
                                             @endif
 
-                                            @if($r->status == 'Approved' || $r->status == 'Rejected')
+                                            @if($r->status == 'Pending')
                                                 <button type="button" class="action-btn del"
                                                     onclick="confirmDelete({{ $r->id }}, '{{ addslashes($r->product->name ?? $r->id) }}')"
                                                     title="Hapus Request">

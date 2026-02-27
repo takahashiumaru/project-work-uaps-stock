@@ -678,53 +678,90 @@
             const leaveData = @json($leaveData ?? []);
 
             // 2. Inisialisasi Chart
-            // Line Chart: Performa Pengerjaan Pesawat
+            // Line Chart: Aktivitas Laporan Pekerjaan (7 Hari)
+            // (data sumber: WorkReport)
             const ctxLine = document.getElementById('lineChart');
             if (ctxLine) {
+                const c = ctxLine.getContext('2d');
+
+                // gradient fill (top -> bottom)
+                const gradient = c.createLinearGradient(0, 0, 0, 320);
+                gradient.addColorStop(0, 'rgba(86, 97, 248, 0.35)');
+                gradient.addColorStop(1, 'rgba(86, 97, 248, 0.02)');
+
+                const maxVal = Math.max(0, ...(lineChartData || []));
+                const suggestedMax = maxVal <= 5 ? 6 : Math.ceil(maxVal * 1.2);
+
                 new Chart(ctxLine, {
                     type: 'line',
                     data: {
                         labels: lineChartLabels,
                         datasets: [{
-                            label: 'Jumlah Penerbangan',
+                            label: 'Laporan Approved',
                             data: lineChartData,
-                            borderColor: '#667eea',
-                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderColor: '#5661f8',
+                            backgroundColor: gradient,
                             fill: true,
-                            tension: 0.4,
-                            borderWidth: 3
+                            tension: 0.45,
+
+                            // points
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointBorderWidth: 2,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#5661f8',
+
+                            // line thickness
+                            borderWidth: 3,
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 10
-                                },
-                                grid: {
-                                    color: 'rgba(0,0,0,0.05)'
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                align: 'end',
+                                labels: {
+                                    boxWidth: 10,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    color: '#6b7280',
+                                    font: { weight: '700' }
                                 }
                             },
-                            x: {
-                                grid: {
-                                    color: 'rgba(0,0,0,0.05)'
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                                titleColor: '#fff',
+                                bodyColor: '#e5e7eb',
+                                padding: 12,
+                                displayColors: false,
+                                callbacks: {
+                                    label: (ctx) => ` ${ctx.parsed.y} laporan`
                                 }
                             }
                         },
-                        plugins: {
-                            legend: {
-                                display: false
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: {
+                                    color: '#6b7280',
+                                    font: { weight: '600' }
+                                }
                             },
-                            tooltip: {
-                                backgroundColor: 'rgba(0,0,0,0.8)',
-                                titleFont: {
-                                    size: 14
+                            y: {
+                                beginAtZero: true,
+                                suggestedMax,
+                                grid: {
+                                    color: 'rgba(15, 23, 42, 0.06)',
+                                    drawBorder: false
                                 },
-                                bodyFont: {
-                                    size: 13
+                                ticks: {
+                                    precision: 0,
+                                    color: '#6b7280',
+                                    font: { weight: '600' }
                                 }
                             }
                         }
