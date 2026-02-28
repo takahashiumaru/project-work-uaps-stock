@@ -595,6 +595,37 @@
             justify-content:center;
             border: 2px solid var(--nav-bg);
         }
+
+        /* Global override: make SweetAlert popups curved */
+        .swal2-popup, .swal2-popup-custom {
+            border-radius: 18px !important; /* main curve */
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(2,6,23,0.12) !important;
+            transition: transform .12s ease, box-shadow .12s ease;
+        }
+
+        /* Slightly more rounded action buttons inside SweetAlert */
+        .swal2-styled,
+        .swal2-confirm,
+        .swal2-cancel,
+        .swal2-confirm-custom,
+        .swal2-cancel-custom {
+            border-radius: 10px !important;
+        }
+
+        /* Keep SweetAlert icon circular and visually separated from popup background */
+        .swal2-popup .swal2-icon {
+            border-radius: 50% !important;
+            box-shadow: none !important;
+        }
+
+        /* Ensure small screens don't lose curvature while staying responsive */
+        @media (max-width: 420px) {
+            .swal2-popup, .swal2-popup-custom {
+                width: calc(100% - 2rem) !important;
+                border-radius: 14px !important;
+            }
+        }
     </style>
 </head>
 

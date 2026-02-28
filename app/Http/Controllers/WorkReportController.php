@@ -60,43 +60,56 @@ class WorkReportController extends Controller
             'attachment'  => ['nullable', 'file', 'max:2048', 'mimes:jpg,jpeg,png,pdf,doc,docx'],
         ]);
 
-        $fileName = null;
-        if ($request->hasFile('attachment')) {
-            $file = $request->file('attachment');
+        try {
+            $fileName = null;
+            if ($request->hasFile('attachment')) {
+                $file = $request->file('attachment');
 
-            if ($file->isValid()) {
-                $ext      = $file->getClientOriginalExtension();
-                $fileName = uniqid().'.'.$ext;
+                if ($file->isValid()) {
+                    $ext      = $file->getClientOriginalExtension();
+                    $fileName = uniqid().'.'.$ext;
 
-                // folder publik: /public/work_reports
-                $targetDir = public_path('work_reports');
+                    // folder publik: /public/work_reports
+                    $targetDir = public_path('work_reports');
 
-                if (!is_dir($targetDir)) {
-                    mkdir($targetDir, 0775, true);
+                    if (!is_dir($targetDir)) {
+                        mkdir($targetDir, 0775, true);
+                    }
+
+                    // pindahkan file ke folder publik
+                    $file->move($targetDir, $fileName);
+
+                    Log::info('WorkReport upload (public)', [
+                        'original'  => $file->getClientOriginalName(),
+                        'stored_as' => $fileName,
+                        'path'      => $targetDir.'/'.$fileName,
+                    ]);
                 }
-
-                // pindahkan file ke folder publik
-                $file->move($targetDir, $fileName);
-
-                Log::info('WorkReport upload (public)', [
-                    'original'  => $file->getClientOriginalName(),
-                    'stored_as' => $fileName,
-                    'path'      => $targetDir.'/'.$fileName,
-                ]);
             }
+
+            WorkReport::create([
+                'title'       => $validated['title'],
+                'description' => $validated['description'],
+                'work_date'   => $validated['work_date'],
+                'file_path'   => $fileName, // hanya nama file, folder fixed: work_reports
+                'status'      => 'Pending',
+            ]);
+
+            return redirect()
+                ->route('work-reports.index')
+                ->with('success', 'Laporan berhasil disubmit'.($fileName ? '!' : ' tanpa lampiran.'));
+
+        } catch (\Throwable $e) {
+            Log::error('Failed to store WorkReport', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat menyimpan laporan. Silakan coba lagi.');
         }
-
-        WorkReport::create([
-            'title'       => $validated['title'],
-            'description' => $validated['description'],
-            'work_date'   => $validated['work_date'],
-            'file_path'   => $fileName, // hanya nama file, folder fixed: work_reports
-            'status'      => 'Pending',
-        ]);
-
-        return redirect()
-            ->route('work-reports.index')
-            ->with('success', 'Laporan berhasil disubmit'.($fileName ? '!' : ' tanpa lampiran.'));
     }
 
     public function updateStatus(Request $request, WorkReport $workReport)

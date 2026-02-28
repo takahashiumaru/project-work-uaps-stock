@@ -63,10 +63,10 @@
     </div>
 
     <h1 style="text-align:center;">
-        {{ $title ?? 'Laporan Stok Log' }}
+        {{ 'Laporan Keluar Masuk Barang' }}
     </h1>
 
-    <h2>Riwayat Keluar Masuk Barang</h2>
+    {{-- <h2>Riwayat Keluar Masuk Barang</h2> --}}
     <div class="subtitle">
        
     </div>

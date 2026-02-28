@@ -269,17 +269,55 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+/* updated: use CSS variables (or fallbacks) so Swal matches page card in light/dark */
+function getSwalBase(isDark, confirmButtonColorFallback) {
+    const root = getComputedStyle(document.documentElement);
+    const cardBgVar = root.getPropertyValue('--card-bg')?.trim();
+    const textVar = root.getPropertyValue('--text')?.trim();
+    const cardBg = cardBgVar && cardBgVar !== 'inherit' ? cardBgVar : (isDark ? '#0b1220' : '#ffffff');
+    const textColor = textVar && textVar !== 'inherit' ? textVar : (isDark ? '#e6eef8' : '#000000');
+
+    // Pastikan iconColor selalu di-set agar ikon SweetAlert terlihat di light & dark mode.
+    return {
+        background: cardBg,
+        color: textColor,
+        confirmButtonColor: confirmButtonColorFallback,
+        iconColor: textColor,
+        allowOutsideClick: true
+    };
+}
+
+/* NEW: map icon types to distinguishable colors */
+function getIconColor(type, isDark) {
+    // warna terang yang kontras pada light/dark backgrounds
+    const map = {
+        success: '#10b981', // green
+        error:   '#ef4444', // red
+        warning: '#f59e0b', // amber
+        info:    '#3b82f6', // blue
+        question:'#6366f1'  // indigo
+    };
+    return map[type] || (isDark ? '#e6eef8' : '#000000');
+}
+
 function confirmDelete(productId, productName) {
-    Swal.fire({
+    const isDark = document.documentElement.classList.contains('dark')
+        || document.body.classList.contains('dark')
+        || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+    const base = getSwalBase(isDark, '#d33');
+    const cancelBtnColor = isDark ? '#6b7280' : '#8592a3';
+
+    Swal.fire(Object.assign({}, base, {
         title: 'Hapus Produk?',
         html: `Apakah Anda yakin ingin menghapus <strong>${productName}</strong>?`,
         icon: 'warning',
+        iconColor: getIconColor('warning', isDark),
         showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#8592a3',
         confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
+        cancelButtonText: 'Batal',
+        cancelButtonColor: cancelBtnColor
+    })).then((result) => {
         if (result.isConfirmed) {
             document.getElementById('deleteForm-' + productId).submit();
         }
@@ -288,15 +326,23 @@ function confirmDelete(productId, productName) {
 
 document.addEventListener('DOMContentLoaded', function() {
     @if (session('success'))
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil',
-            text: '{{ session('success') }}',
-            timer: 3000,
-            showConfirmButton: false
-        });
-    @endif
+        (function(){
+            const isDark = document.documentElement.classList.contains('dark')
+                || document.body.classList.contains('dark')
+                || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
+            const base = getSwalBase(isDark, '#5661f8');
+            Swal.fire(Object.assign({}, base, {
+                icon: 'success',
+                iconColor: getIconColor('success', isDark),
+                title: 'Berhasil',
+                text: '{{ session('success') }}',
+                timer: 3000,
+                showConfirmButton: false,
+                timerProgressBar: true
+            }));
+        })();
+    @endif
 });
 </script>
 

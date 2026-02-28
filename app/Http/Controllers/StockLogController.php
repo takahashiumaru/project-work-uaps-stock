@@ -113,9 +113,57 @@ class StockLogController extends Controller
 
     public function destroy(StockLog $stock_log)
     {
-        // audit trail biasanya tidak dihapus; tapi CRUD diminta, jadi allow delete
-        $stock_log->delete();
-        return redirect()->route('stock-logs.index')->with('success', 'Log berhasil dihapus.');
+        DB::beginTransaction();
+        try {
+            $product = null;
+            if ($stock_log->product_id) {
+                // kunci baris product untuk mencegah race condition
+                $product = Product::whereKey($stock_log->product_id)->lockForUpdate()->first();
+            }
+
+            if ($product) {
+                $currentStock = (int) ($product->stock ?? 0);
+                $qty = (int) ($stock_log->qty ?? 0);
+                $targetStock = $currentStock;
+
+                if ($stock_log->type === 'In') {
+                    // membalik "masuk" -> kurangi stok
+                    $targetStock = $currentStock - $qty;
+                } elseif ($stock_log->type === 'Out') {
+                    // membalik "keluar" -> tambahkan stok
+                    $targetStock = $currentStock + $qty;
+                } else {
+                    // Adjustment: gunakan old_stock jika tersedia
+                    if (!is_null($stock_log->old_stock)) {
+                        $targetStock = (int) $stock_log->old_stock;
+                    } else {
+                        DB::rollBack();
+                        return redirect()->route('stock-logs.index')
+                            ->with('error', 'Tidak dapat mengembalikan stok: data old_stock tidak tersedia pada log adjustment.');
+                    }
+                }
+
+                if ($targetStock < 0) {
+                    DB::rollBack();
+                    return redirect()->route('stock-logs.index')
+                        ->with('error', 'Tidak dapat menghapus log karena pengembalian stok akan membuat nilai stok menjadi negatif.');
+                }
+
+                $product->stock = $targetStock;
+                $product->save();
+            }
+
+            // hapus log (boleh product null jika produk sudah dihapus)
+            $stock_log->delete();
+
+            DB::commit();
+
+            return redirect()->route('stock-logs.index')->with('success', 'Log berhasil dihapus dan stok dikembalikan.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return redirect()->route('stock-logs.index')
+                ->with('error', 'Gagal menghapus log: ' . $e->getMessage());
+        }
     }
 
     /**

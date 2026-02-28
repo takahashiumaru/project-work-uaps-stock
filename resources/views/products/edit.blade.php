@@ -180,3 +180,75 @@
     </div>
 </div>
 @endsection
+
+@section('scripts')
+    {{-- CSS Select2 terbaru --}}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+    {{-- SweetAlert2 (JS) --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    {{-- JS Select2 --}}
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#category').select2({ allowClear: true, width: '100%', theme: 'bootstrap-5' });
+            $('#unit').select2({ allowClear: true, width: '100%', theme: 'bootstrap-5' });
+
+            function getSwalBase(isDark, confirmButtonColorFallback) {
+                const root = getComputedStyle(document.documentElement);
+                const cardBgVar = root.getPropertyValue('--card-bg')?.trim();
+                const textVar = root.getPropertyValue('--text')?.trim();
+                const cardBg = cardBgVar && cardBgVar !== 'inherit' ? cardBgVar : (isDark ? '#0b1220' : '#ffffff');
+                const textColor = textVar && textVar !== 'inherit' ? textVar : (isDark ? '#e6eef8' : '#000000');
+
+                // Pastikan iconColor selalu di-set agar ikon SweetAlert terlihat di light & dark mode.
+                return {
+                    background: cardBg,
+                    color: textColor,
+                    confirmButtonColor: confirmButtonColorFallback,
+                    iconColor: textColor,
+                    allowOutsideClick: true
+                };
+            }
+
+            /* NEW: map icon types to distinguishable colors */
+            function getIconColor(type, isDark) {
+                const map = {
+                    success: '#10b981',
+                    error:   '#ef4444',
+                    warning: '#f59e0b',
+                    info:    '#3b82f6',
+                    question:'#6366f1'
+                };
+                return map[type] || (isDark ? '#e6eef8' : '#000000');
+            }
+
+            const success = @json(session('success'));
+            const error = @json(session('error'));
+            const validationErrors = @json($errors->any() ? $errors->all() : []);
+            const isDark = document.documentElement.classList.contains('dark')
+                || document.body.classList.contains('dark')
+                || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+            function fireSwal(opts) {
+                const base = getSwalBase(isDark, '#5661f8');
+                // pastikan iconColor sesuai tipe ikon untuk cepat dikenali
+                if (opts && opts.icon) {
+                    opts.iconColor = getIconColor(opts.icon, isDark);
+                }
+                Swal.fire(Object.assign(base, opts));
+            }
+
+            if (success) {
+                fireSwal({ icon: 'success', title: success, timer: 2200, timerProgressBar: true, showConfirmButton: false });
+            } else if (error) {
+                fireSwal({ icon: 'error', title: error });
+            } else if (validationErrors && validationErrors.length) {
+                fireSwal({ icon: 'error', title: 'Terdapat kesalahan input', html: validationErrors.map(e => `<div style="text-align:left;margin:6px 0">${e}</div>`).join('') });
+            }
+        });
+    </script>
+@endsection

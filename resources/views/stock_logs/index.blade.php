@@ -83,12 +83,22 @@
     width:36px;height:36px;border-radius:10px;
     color:#fff;text-decoration:none;border:0;
     transition:all .15s ease; box-shadow:0 6px 14px rgba(16,24,40,.08);
+    vertical-align:middle;
 }
 .action-btn:hover{
     transform:translateY(-1px);filter:brightness(.98);color:#fff;
 }
 .action-btn.view{background:linear-gradient(135deg,#5dbede,#2f9fbf);}
 .action-btn.del{background:linear-gradient(135deg,#ef4444,#f97373);}
+
+/* { changed code }: pastikan form hapus dan tombol action sejajar */
+.delete-log-form{
+    display:inline-flex;
+    align-items:center;
+    margin:0;
+    padding:0;
+    vertical-align:middle;
+}
 
 /* FILTER wrapper – pill penuh */
 .filter-wrapper{
@@ -227,8 +237,6 @@
       </div>
 
       <div class="card-body">
-        @if(session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
-        @if(session('error')) <div class="alert alert-danger">{{ session('error') }}</div> @endif
         @if ($errors->any())
           <div class="alert alert-danger"><ul class="mb-0">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
         @endif
@@ -273,7 +281,8 @@
                       </a>
                       <form method="POST"
                             action="{{ route('stock-logs.destroy', $l) }}"
-                            onsubmit="return confirm('Hapus log ini?');">
+                            class="delete-log-form"
+                            data-item="{{ $l->product->name ?? 'log' }}">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="action-btn del" title="Hapus Log">
@@ -319,4 +328,84 @@
     });
   });
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    (function() {
+        function getSwalTheme() {
+            const html = document.documentElement;
+            const body = document.body;
+
+            const dataTheme = html.getAttribute('data-theme') || html.getAttribute('data-bs-theme') || body.getAttribute('data-theme');
+            if (dataTheme) {
+                return dataTheme === 'dark'
+                    ? { background: '#000000', color: '#ffffff', confirmButtonColor: '#5661f8' }
+                    : { background: '#ffffff', color: '#0f172a', confirmButtonColor: '#3b82f6' };
+            }
+
+            const lsTheme = localStorage.getItem('theme') || localStorage.getItem('color-theme');
+            if (lsTheme) {
+                return lsTheme === 'dark'
+                    ? { background: '#000000', color: '#ffffff', confirmButtonColor: '#5661f8' }
+                    : { background: '#ffffff', color: '#0f172a', confirmButtonColor: '#3b82f6' };
+            }
+
+            const hasDarkClass = html.classList.contains('dark') || body.classList.contains('dark') ||
+                                 html.classList.contains('theme-dark') || body.classList.contains('theme-dark');
+            if (hasDarkClass) {
+                return { background: '#000000', color: '#ffffff', confirmButtonColor: '#5661f8' };
+            }
+
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (prefersDark) {
+                return { background: '#000000', color: '#ffffff', confirmButtonColor: '#5661f8' };
+            }
+
+            return { background: '#ffffff', color: '#0f172a', confirmButtonColor: '#3b82f6' };
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('success'))
+                const _msg = @json(session('success'));
+                const _theme = getSwalTheme();
+                Swal.fire({
+                    title: 'Berhasil',
+                    html: _msg,
+                    icon: 'success',
+                    background: _theme.background,
+                    color: _theme.color,
+                    confirmButtonColor: _theme.confirmButtonColor,
+                    customClass: { popup: 'shadow-sm' }
+                });
+            @endif
+
+            document.querySelectorAll('.delete-log-form').forEach(function(form){
+                form.addEventListener('submit', function(ev){
+                    ev.preventDefault();
+                    const item = form.getAttribute('data-item') || 'log';
+                    const _theme = getSwalTheme();
+
+                    Swal.fire({
+                        title: 'Hapus Stock Product?',
+                        html: 'Apakah Anda yakin ingin menghapus stock product <strong>' + item + '</strong>?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, Hapus!',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: false,
+                        background: _theme.background,
+                        color: _theme.color,
+                        confirmButtonColor: '#ef4444',
+                        customClass: { popup: 'shadow-sm' }
+                    }).then(function(result){
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+        });
+    })();
+</script>
+
 @endsection

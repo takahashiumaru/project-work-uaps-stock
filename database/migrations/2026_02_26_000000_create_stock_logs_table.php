@@ -8,6 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Skip creating the table if it already exists to avoid "table exists" errors
+        if (Schema::hasTable('stock_logs')) {
+            return;
+        }
+
         Schema::create('stock_logs', function (Blueprint $table) {
             $table->id();
 
@@ -23,9 +28,13 @@ return new class extends Migration
             $table->string('user', 50)->default('Admin SBY');
 
             $table->index('product_id');
-            $table->foreign('product_id')
-                ->references('id')->on('products')
-                ->onDelete('restrict');
+
+            // Tambahkan foreign key hanya jika tabel products sudah ada
+            if (Schema::hasTable('products')) {
+                $table->foreign('product_id')
+                    ->references('id')->on('products')
+                    ->onDelete('restrict');
+            }
         });
     }
 

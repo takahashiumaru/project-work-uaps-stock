@@ -160,6 +160,7 @@
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     $(document).ready(function() {
@@ -174,6 +175,61 @@
             theme: 'bootstrap-5',
             placeholder: '-- Pilih Barang --'
         });
+
+        // ubah tema SweetAlert: light -> putih, dark -> hitam
+        function getSwalTheme() {
+            // deteksi tema mirip implementasi di product: prioritas dari pengaturan eksplisit
+            const html = document.documentElement;
+            const body = document.body;
+
+            // 1) cek atribut yang mungkin dipakai (data-theme / data-bs-theme)
+            const dataTheme = html.getAttribute('data-theme') || html.getAttribute('data-bs-theme') || body.getAttribute('data-theme');
+            if (dataTheme) {
+                return dataTheme === 'dark'
+                    ? { background: '#000000', color: '#ffffff', confirmButtonColor: '#5661f8' }
+                    : { background: '#ffffff', color: '#0f172a', confirmButtonColor: '#3b82f6' };
+            }
+
+            // 2) cek localStorage (mis. tema tersimpan)
+            const lsTheme = localStorage.getItem('theme') || localStorage.getItem('color-theme');
+            if (lsTheme) {
+                return lsTheme === 'dark'
+                    ? { background: '#000000', color: '#ffffff', confirmButtonColor: '#5661f8' }
+                    : { background: '#ffffff', color: '#0f172a', confirmButtonColor: '#3b82f6' };
+            }
+
+            // 3) cek class pada html/body (banyak layout menambahkan class 'dark' atau 'theme-dark')
+            const hasDarkClass = html.classList.contains('dark') || body.classList.contains('dark') ||
+                                 html.classList.contains('theme-dark') || body.classList.contains('theme-dark');
+            if (hasDarkClass) {
+                return { background: '#000000', color: '#ffffff', confirmButtonColor: '#5661f8' };
+            }
+
+            // 4) fallback ke prefers-color-scheme
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (prefersDark) {
+                return { background: '#000000', color: '#ffffff', confirmButtonColor: '#5661f8' };
+            }
+
+            // default ke light
+            return { background: '#ffffff', color: '#0f172a', confirmButtonColor: '#3b82f6' };
+        }
+
+        @if(session('success'))
+            const _swMsg = @json(session('success'));
+            const _swTheme = getSwalTheme();
+            Swal.fire({
+                title: 'Berhasil',
+                html: _swMsg,
+                icon: 'success',
+                background: _swTheme.background,
+                color: _swTheme.color,
+                confirmButtonColor: _swTheme.confirmButtonColor,
+                customClass: {
+                    popup: 'shadow-sm'
+                }
+            });
+        @endif
     });
 </script>
 @endsection

@@ -83,10 +83,26 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnApprove = document.getElementById('btnApprove');
     const btnReject = document.getElementById('btnReject');
 
-    // FIX: btnSave tidak ada di markup -> jangan dipakai
     function disableButtons(disabled) {
         btnApprove.disabled = disabled;
         btnReject.disabled = disabled;
+    }
+
+    function getSwalBase(isDark, confirmButtonColorFallback) {
+        const root = getComputedStyle(document.documentElement);
+        const cardBgVar = root.getPropertyValue('--card-bg')?.trim();
+        const textVar = root.getPropertyValue('--text')?.trim();
+        const cardBg = cardBgVar && cardBgVar !== 'inherit' ? cardBgVar : (isDark ? '#0b1220' : '#ffffff');
+        const textColor = textVar && textVar !== 'inherit' ? textVar : (isDark ? '#e6eef8' : '#000000');
+
+        return {
+            background: cardBg,
+            color: textColor,
+            confirmButtonColor: confirmButtonColorFallback,
+            // use textColor so SweetAlert icons remain visible on light theme too
+            iconColor: textColor,
+            allowOutsideClick: true
+        };
     }
 
     const csrfToken = '{{ csrf_token() }}';
@@ -98,15 +114,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Approve: tampilkan konfirmasi dulu
     btnApprove.addEventListener('click', function () {
-        Swal.fire({
+        const isDark = document.documentElement.classList.contains('dark')
+            || document.body.classList.contains('dark')
+            || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        // use a visible green confirm button for approve
+        const base = getSwalBase(isDark, '#10b981');
+        const cancelBtnColor = isDark ? '#6b7280' : '#6c757d';
+
+        Swal.fire(Object.assign({}, base, {
             title: 'Yakin ingin menyetujui?',
             text: 'Setujui permintaan ini dan tambahkan stok sesuai jumlah request.',
             icon: 'question',
+            iconColor: '#3b82f6',
             showCancelButton: true,
             confirmButtonText: 'Ya, setujui',
             cancelButtonText: 'Batal',
+            cancelButtonColor: cancelBtnColor,
             reverseButtons: true
-        }).then((result) => {
+        })).then((result) => {
             if (!result.isConfirmed) return;
 
             const note = noteEl.value.trim();
@@ -125,18 +150,24 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(({ status, body }) => {
                 disableButtons(false);
                 if (status >= 200 && status < 300) {
-                    Swal.fire({ icon: 'success', title: 'Berhasil', text: body.message || 'Request approved.' })
+                    const isDark2 = document.documentElement.classList.contains('dark')
+                        || document.body.classList.contains('dark')
+                        || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                    Swal.fire(Object.assign({}, getSwalBase(isDark2, '#10b981'), { icon: 'success', iconColor: '#10b981', title: 'Berhasil', text: body.message || 'Request approved.' }))
                         .then(() => { window.location.href = indexUrl; });
                 } else if (status === 422) {
-                    Swal.fire({ icon: 'warning', title: 'Validation', text: Object.values(body.errors).flat().join(' ') });
+                    const isDark2 = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                    Swal.fire(Object.assign({}, getSwalBase(isDark2, '#f59e0b'), { icon: 'warning', iconColor: '#f59e0b', title: 'Validation', text: Object.values(body.errors).flat().join(' ') }));
                 } else {
-                    Swal.fire({ icon: 'error', title: 'Error', text: body.error || 'Terjadi kesalahan' });
+                    const isDark2 = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                    Swal.fire(Object.assign({}, getSwalBase(isDark2, '#d33'), { icon: 'error', iconColor: '#ef4444', title: 'Error', text: body.error || 'Terjadi kesalahan' }));
                 }
             })
             .catch(err => {
                 disableButtons(false);
                 console.error(err);
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Gagal menghubungi server.' });
+                const isDark2 = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                Swal.fire(Object.assign({}, getSwalBase(isDark2, '#d33'), { icon: 'error', iconColor: '#ef4444', title: 'Error', text: 'Gagal menghubungi server.' }));
             });
         });
     });
@@ -145,20 +176,32 @@ document.addEventListener('DOMContentLoaded', function () {
     btnReject.addEventListener('click', function () {
         const note = noteEl.value.trim();
         if (!note) {
-            Swal.fire({ icon: 'warning', title: 'Alasan wajib', text: 'Mohon isi catatan alasan penolakan terlebih dahulu.' });
+            const isDark = document.documentElement.classList.contains('dark')
+                || document.body.classList.contains('dark')
+                || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            Swal.fire(Object.assign({}, getSwalBase(isDark, '#f59e0b'), { icon: 'warning', iconColor: '#f59e0b', title: 'Alasan wajib', text: 'Mohon isi catatan alasan penolakan terlebih dahulu.' }));
             noteEl.focus();
             return;
         }
 
-        Swal.fire({
+        const isDark = document.documentElement.classList.contains('dark')
+            || document.body.classList.contains('dark')
+            || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        // use a visible red confirm button for reject
+        const base = getSwalBase(isDark, '#ef4444');
+        const cancelBtnColor = isDark ? '#6b7280' : '#6c757d';
+
+        Swal.fire(Object.assign({}, base, {
             title: 'Yakin ingin menolak?',
             text: 'Menolak akan mencatat alasan dan mengubah status menjadi Rejected.',
             icon: 'warning',
+            iconColor: '#f59e0b',
             showCancelButton: true,
             confirmButtonText: 'Ya, tolak',
             cancelButtonText: 'Batal',
+            cancelButtonColor: cancelBtnColor,
             reverseButtons: true
-        }).then((result) => {
+        })).then((result) => {
             if (!result.isConfirmed) return;
 
             disableButtons(true);
@@ -175,18 +218,24 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(({ status, body }) => {
                 disableButtons(false);
                 if (status >= 200 && status < 300) {
-                    Swal.fire({ icon: 'success', title: 'Berhasil', text: body.message || 'Request rejected.' })
+                    const isDark2 = document.documentElement.classList.contains('dark')
+                        || document.body.classList.contains('dark')
+                        || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                    Swal.fire(Object.assign({}, getSwalBase(isDark2, '#ef4444'), { icon: 'success', iconColor: '#10b981', title: 'Berhasil', text: body.message || 'Request rejected.' }))
                         .then(() => { window.location.href = indexUrl; });
                 } else if (status === 422) {
-                    Swal.fire({ icon: 'warning', title: 'Validation', text: Object.values(body.errors).flat().join(' ') });
+                    const isDark2 = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                    Swal.fire(Object.assign({}, getSwalBase(isDark2, '#f59e0b'), { icon: 'warning', iconColor: '#f59e0b', title: 'Validation', text: Object.values(body.errors).flat().join(' ') }));
                 } else {
-                    Swal.fire({ icon: 'error', title: 'Error', text: body.error || 'Terjadi kesalahan' });
+                    const isDark2 = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                    Swal.fire(Object.assign({}, getSwalBase(isDark2, '#d33'), { icon: 'error', iconColor: '#ef4444', title: 'Error', text: body.error || 'Terjadi kesalahan' }));
                 }
             })
             .catch(err => {
                 disableButtons(false);
                 console.error(err);
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Gagal menghubungi server.' });
+                const isDark2 = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                Swal.fire(Object.assign({}, getSwalBase(isDark2, '#d33'), { icon: 'error', iconColor: '#ef4444', title: 'Error', text: 'Gagal menghubungi server.' }));
             });
         });
     });

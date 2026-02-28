@@ -118,13 +118,36 @@
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(document).ready(function() {
-    $('#product_id').select2({
-        allowClear: true,
-        width: '100%',
-        theme: 'bootstrap-5'
-    });
+    $('#product_id').select2({ allowClear: true, width: '100%', theme: 'bootstrap-5' });
+
+    function getSwalBase(isDark, confirmButtonColorFallback) {
+        const root = getComputedStyle(document.documentElement);
+        const cardBgVar = root.getPropertyValue('--card-bg')?.trim();
+        const textVar = root.getPropertyValue('--text')?.trim();
+        const cardBg = cardBgVar && cardBgVar !== 'inherit' ? cardBgVar : (isDark ? '#0b1220' : '#ffffff');
+        const textColor = textVar && textVar !== 'inherit' ? textVar : (isDark ? '#e6eef8' : '#000000');
+
+        return {
+            background: cardBg,
+            color: textColor,
+            confirmButtonColor: confirmButtonColorFallback,
+            // ensure icon contrast on both light and dark themes
+            iconColor: textColor,
+            allowOutsideClick: true
+        };
+    }
+
+    @if(session('success'))
+        (function(){
+            const isDark = document.documentElement.classList.contains('dark')
+                || document.body.classList.contains('dark')
+                || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            Swal.fire(Object.assign({}, getSwalBase(isDark, '#5661f8'), { icon: 'success', iconColor: '#10b981', title: 'Berhasil', text: '{{ session('success') }}', timer: 2500, showConfirmButton: false, timerProgressBar: true }));
+        })();
+    @endif
 });
 </script>
 @endsection
