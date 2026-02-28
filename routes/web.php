@@ -17,6 +17,7 @@ use App\Http\Controllers\RequestController;
 use App\Http\Controllers\StockLogController;
 use App\Http\Controllers\WorkReportController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Auth\OtpController;
 
 // Page
 Route::get('/profile/{id}', [UserController::class, 'profile'])->name('users.profile');
@@ -53,6 +54,9 @@ Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/verify-otp', [LoginController::class, 'showOtpForm'])->name('verify.otp.form');
 Route::post('/verify-otp', [LoginController::class, 'verifyOtp'])->name('verify.otp');
 
+Route::get('/otp', [OtpController::class, 'show'])->name('otp.show');
+Route::post('/otp', [OtpController::class, 'verify'])->name('otp.verify');
+Route::post('/otp/resend', [OtpController::class, 'resend'])->name('otp.resend');
 
 Route::get('/forgot-password', [LoginController::class, 'showForgotPasswordForm'])->name('forgot.password.form');
 Route::post('/forgot-password', [LoginController::class, 'sendForgotPassword'])->name('forgot.password.send');
