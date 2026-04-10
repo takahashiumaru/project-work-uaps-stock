@@ -27,9 +27,9 @@ jobs:
                 git pull origin main
             fi
 
-            # 3. Pastikan direktori storage ada dan permissions benar (777 agar bisa diakses Docker)
-            mkdir -p storage/app/public
-            chmod -R 777 storage bootstrap/cache
+            # 3. Pastikan direktori storage ada dan permissions benar
+            mkdir -p storage/app/public bootstrap/cache
+            chmod -R 777 storage bootstrap/cache public
 
             # 4. Gunakan Network yang sama atau baru
             docker network create uaps-network 2>/dev/null || true
