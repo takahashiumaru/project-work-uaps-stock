@@ -9,11 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Eksekusi Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_IP }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
           script: |
             # 1. Tentukan Workspace khusus project ini
             mkdir -p ~/project-work-8082
