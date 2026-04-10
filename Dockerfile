@@ -33,6 +33,10 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-d
     chown -R www-data:www-data storage bootstrap/cache public && \
     chmod -R 775 storage bootstrap/cache public
 
+# Fix Nginx runtime permissions
+RUN mkdir -p /var/lib/nginx/tmp /var/log/nginx && \
+    chown -R www-data:www-data /var/lib/nginx /var/log/nginx /run
+
 # Configuration for Nginx and PHP-FPM
 RUN printf "user www-data;\n\
 worker_processes auto;\n\
@@ -66,10 +70,11 @@ if [ ! -f .env ]; then \n\
     php artisan key:generate --force \n\
 fi\n\
 \n\
-# Fix permissions at runtime\n\
-chown -R www-data:www-data /var/www/html/storage\n\
+# Fix permissions at runtime for storage AND public\n\
+chown -R www-data:www-data /var/www/html/storage /var/www/html/public\n\
+chmod -R 755 /var/www/html/storage /var/www/html/public\n\
 \n\
-# Link storage correctly\n\
+# Re-link storage correctly\n\
 rm -rf public/storage\n\
 php artisan storage:link --force\n\
 \n\
