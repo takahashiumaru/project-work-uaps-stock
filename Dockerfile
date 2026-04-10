@@ -34,41 +34,46 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-d
     chmod -R 775 storage bootstrap/cache public
 
 # Configuration for Nginx and PHP-FPM
-RUN printf "server {\n\
-    listen 80;\n\
-    index index.php index.html;\n\
-    root /var/www/html/public;\n\
-    location / {\n\
-        try_files \$uri \$uri/ /index.php?\$query_string;\n\
+RUN printf "user www-data;\n\
+worker_processes auto;\n\
+pid /run/nginx.pid;\n\
+events { worker_connections 768; }\n\
+http {\n\
+    include /etc/nginx/mime.types;\n\
+    default_type application/octet-stream;\n\
+    server {\n\
+        listen 80;\n\
+        index index.php index.html;\n\
+        root /var/www/html/public;\n\
+        location / {\n\
+            try_files \$uri \$uri/ /index.php?\$query_string;\n\
+        }\n\
+        location ~ \.php$ {\n\
+            fastcgi_split_path_info ^(.+\.php)(/.+)$;\n\
+            fastcgi_pass 127.0.0.1:9000;\n\
+            fastcgi_index index.php;\n\
+            include fastcgi_params;\n\
+            fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;\n\
+            fastcgi_param PATH_INFO \$fastcgi_path_info;\n\
+        }\n\
     }\n\
-    location ~ \.php$ {\n\
-        fastcgi_split_path_info ^(.+\.php)(/.+)$;\n\
-        fastcgi_pass 127.0.0.1:9000;\n\
-        fastcgi_index index.php;\n\
-        include fastcgi_params;\n\
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;\n\
-        fastcgi_param PATH_INFO \$fastcgi_path_info;\n\
-    }\n\
-}\n" > /etc/nginx/http.d/default.conf
+}\n" > /etc/nginx/nginx.conf
 
-# Entrypoint script (Tanpa php artisan migrate)
+# Entrypoint script
 RUN printf "#!/bin/bash\n\
 if [ ! -f .env ]; then \n\
     cp .env.example .env && \n\
     php artisan key:generate --force \n\
 fi\n\
 \n\
-# Update .env for production speed\n\
-sed -i 's/APP_ENV=local/APP_ENV=production/' .env\n\
-sed -i 's/APP_DEBUG=true/APP_DEBUG=false/' .env\n\
-sed -i 's/DB_HOST=127.0.0.1/DB_HOST=mysql_db/' .env\n\
+# Fix permissions at runtime\n\
+chown -R www-data:www-data /var/www/html/storage\n\
 \n\
-echo 'Setting up cache...'\n\
+# Link storage correctly\n\
+rm -rf public/storage\n\
+php artisan storage:link --force\n\
+\n\
 php artisan optimize:clear\n\
-php artisan storage:link --force || true\n\
-php artisan config:cache\n\
-php artisan route:cache\n\
-php artisan view:cache\n\
 \n\
 # Start PHP-FPM and Nginx\n\
 php-fpm -D\n\
