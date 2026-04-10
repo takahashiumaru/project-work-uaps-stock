@@ -49,6 +49,10 @@ http {\n\
         listen 80;\n\
         index index.php index.html;\n\
         root /var/www/html/public;\n\
+        location /storage/ {\n\
+            alias /var/www/html/storage/app/public/;\n\
+            autoindex off;\n\
+        }\n\
         location / {\n\
             try_files \$uri \$uri/ /index.php?\$query_string;\n\
         }\n\
